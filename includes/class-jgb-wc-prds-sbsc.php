@@ -57,6 +57,10 @@ class Jgb_Wc_Prds_Sbsc {
 	 */
 	protected $version;
 
+	protected $tpltr;
+
+	public static $static_plugin_name;
+
 	/**
 	 * Define the core functionality of the plugin.
 	 *
@@ -73,6 +77,8 @@ class Jgb_Wc_Prds_Sbsc {
 			$this->version = '1.0.0';
 		}
 		$this->plugin_name = 'jgb-wc-prds-sbsc';
+
+		Jgb_Wc_Prds_Sbsc::$static_plugin_name = $this->plugin_name;
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -112,6 +118,11 @@ class Jgb_Wc_Prds_Sbsc {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jgb-wc-prds-sbsc-i18n.php';
 
 		/**
+		 * Carga el gestor de plantillas.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tpltr.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jgb-wc-prds-sbsc-admin.php';
@@ -122,7 +133,10 @@ class Jgb_Wc_Prds_Sbsc {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-jgb-wc-prds-sbsc-public.php';
 
+		
 		$this->loader = new Jgb_Wc_Prds_Sbsc_Loader();
+
+		$this->tpltr = new JgBWPSTemplater();
 
 	}
 
@@ -173,6 +187,7 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+		$this->loader->add_filter( 'wc_get_template', $this->tpltr, 'wc_get_template_single_product_add_to_cart_variable',90,5);
 	}
 
 	/**
@@ -213,6 +228,10 @@ class Jgb_Wc_Prds_Sbsc {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	public static function get_plugin_home_path(){
+		return WP_PLUGIN_DIR . '/' . Jgb_Wc_Prds_Sbsc::$static_plugin_name;
 	}
 
 }
