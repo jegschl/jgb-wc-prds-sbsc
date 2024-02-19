@@ -59,6 +59,8 @@ class Jgb_Wc_Prds_Sbsc {
 
 	protected $tpltr;
 
+	protected $ProductFieldsManager;
+
 	public static $static_plugin_name;
 
 	/**
@@ -122,6 +124,17 @@ class Jgb_Wc_Prds_Sbsc {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tpltr.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/widgetsman/widget-base.php';
+
+		$atfs = JGB\FormWidgetBase::get_allowed_types();
+		foreach( $atfs as $atf){
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . "includes/widgetsman/widgets/$atf.php";
+		}
+
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/widgetsman/widgets-factory.php';
+
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/product-fields-manager.php';
+
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
@@ -134,9 +147,12 @@ class Jgb_Wc_Prds_Sbsc {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-jgb-wc-prds-sbsc-public.php';
 
 		
+
 		$this->loader = new Jgb_Wc_Prds_Sbsc_Loader();
 
 		$this->tpltr = new JgBWPSTemplater();
+
+		$this->ProductFieldsManager = new JGB\WPSBSC\ProductFieldsManager();
 
 	}
 
@@ -171,6 +187,9 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+		$this->loader->add_filter( 'woocommerce_product_data_tabs', $plugin_admin, 'product_tabs' );
+		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'wc_prds_sbsc_tab' );
+
 	}
 
 	/**
@@ -188,7 +207,13 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
 		$this->loader->add_filter( 'wc_get_template', $this->tpltr, 'wc_get_template_single_product_add_to_cart_variable',90,5);
+		
+		$this->loader->add_filter( 'woocommerce_before_add_to_cart_button', $this->ProductFieldsManager, 'render_fields' );
+		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $this->ProductFieldsManager, 'process_product_fields' );
+		$this->loader->add_action( 'woocommerce_checkout_create_order_line_item', $this->ProductFieldsManager, 'save_order_line_item' );
+		$this->loader->add_action( 'woocommerce_before_calculate_totals', $this->ProductFieldsManager, 'update_product_price' );
 	}
+
 
 	/**
 	 * Run the loader to execute all of the hooks with WordPress.

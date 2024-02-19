@@ -72,8 +72,23 @@ class Jgb_Wc_Prds_Sbsc_Public {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
+		if( is_product() ){
+			wp_enqueue_style( 
+				'jgb-wpsbsc-swiper-bundle',
+				"https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+			);
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css', array(), $this->version, 'all' );
+			$css_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css';
+			$css_script_fl_jcplg_path = plugin_dir_path( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css';
+			$tversion = filemtime($css_script_fl_jcplg_path);
+			wp_enqueue_style( 
+				$this->plugin_name, 
+				plugin_dir_url( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css', 
+				array('jgb-wpsbsc-swiper-bundle'),
+				$tversion,
+				'all' 
+			);
+		}
 
 	}
 
@@ -95,9 +110,45 @@ class Jgb_Wc_Prds_Sbsc_Public {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
+		if( is_product() ){
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js', array( 'jquery' ), $this->version, false );
+			wp_enqueue_script( 
+				'swiper-bundle', 
+				"https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js",
+				array( 'jquery' ), 
+				false,
+				false 
+			);
 
+			$js_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'js/input-render-select-color.js';
+			$js_script_fl_jcplg_path = plugin_dir_path( __FILE__ ) . 'js/input-render-select-color.js';
+			$tversion = filemtime($js_script_fl_jcplg_path);
+			wp_enqueue_script( 
+				'jgb-ir-select-color', 
+				$js_script_fl_jcplg, 
+				array( 
+					'jquery'
+				), 
+				$tversion,
+				false 
+			);
+
+			$js_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js';
+			$js_script_fl_jcplg_path = plugin_dir_path( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js';
+			$tversion = filemtime($js_script_fl_jcplg_path);
+			wp_enqueue_script( 
+				$this->plugin_name, 
+				plugin_dir_url( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js', 
+				array( 
+					'jquery',
+					'swiper-bundle',
+					'jgb-ir-select-color'
+				), 
+				$tversion,
+				false 
+			);
+
+		}
 	}
 
 }

@@ -100,4 +100,22 @@ class Jgb_Wc_Prds_Sbsc_Admin {
 
 	}
 
+	public function product_tabs( $tabs ){
+
+		$tabs['jgb_wcp_sbsc'] = array(
+			'label'   =>  __( 'Step by step config', 'jgb-wc-prds-sbsc' ),
+			'target'  =>  'jgb_wc_prds_sbsc_tab',
+			'priority' => 60,
+			'class'   => array()
+		);
+
+		return $tabs;
+	}
+
+	public function wc_prds_sbsc_tab(){
+		$template_path = Jgb_Wc_Prds_Sbsc::get_plugin_home_path() . "/admin/partials/product-admin-sbs-editor-base.php";
+		if( file_exists( $template_path ) )
+			include $template_path;
+	}
+
 }

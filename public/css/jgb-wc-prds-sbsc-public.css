@@ -2,3 +2,82 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+
+.swiper-slide .step{
+    padding: 40px 50px;
+}
+.main-container{ display: flex; }
+.left-container{ display: inline-block; width: 57%; }
+.right-container{ display: inline-block; width: 40%; }
+
+.right-container .scs-price{
+    display: flex;
+    justify-content: center;
+}
+
+.right-container .scs-price .label{
+    margin-right: 10px;
+}
+.right-container .scs-price .label, .right-container .scs-price .price-container{
+    font-weight: 600;
+}
+
+.value .icon {
+    display: inline-block;
+}
+.step .value > p {
+    display: inline-block;
+    margin-left: 15px;
+    margin-bottom: 0px;
+    margin-top: 15px;
+}
+.step .item-content {
+    width: 70%;
+    display: inline-block;
+    margin-left: 10px;
+    margin-top: 15px;
+}
+.step .short-desc {
+    font-size: 12px;
+}
+.step .value {
+    display: flex;
+}
+
+.step .receta .value {
+	display: table-cell;
+}
+
+.swiper-slide .step .nav-buttons{
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 10px;
+}
+
+.swiper-slide .step .nav-buttons .next,.swiper-slide .step .nav-buttons .forward, .nav-buttons .add-crystal-to-cart {
+    padding: 10px 15px;
+    border-radius: 0px;
+    color: white;
+    background-color: black;
+    flex-basis: 30%;
+    text-align: center;
+    /* font-weight: 600; */
+}
+
+.swiper-slide .step .nav-buttons .next:hover,.swiper-slide .step .nav-buttons .forward:hover,.nav-buttons .add-crystal-to-cart:hover{
+    color: white;
+    background-color: #ff3535;
+}
+
+.step .option-aditional-imgs{
+    display: flex;
+    justify-content: space-around;
+}
+
+.step .option-aditional-imgs .img-itm:nth-of-type(1){
+    background-color: black;
+    border-radius: 25px;
+}
+.step .option-aditional-imgs .img-itm{
+    width: 80px;
+}
