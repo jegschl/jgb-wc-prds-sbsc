@@ -7,7 +7,21 @@
     padding: 40px 50px;
 }
 .main-container{ display: flex; }
-.left-container{ display: inline-block; width: 57%; }
+.left-container{ display: inline-block; width: 57%; background-color: black; color: white;}
+
+.left-container .main-title{
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    border-radius: 25px;
+    padding: 7px;
+    margin-left: 50px;
+    margin-top: 25px;
+    margin-right: 320px;
+    text-align: center;
+    font-weight: 600;
+}
+
 .right-container{ display: inline-block; width: 40%; }
 
 .right-container .scs-price{
@@ -80,4 +94,26 @@
 }
 .step .option-aditional-imgs .img-itm{
     width: 80px;
+}
+
+.help-box{
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: black 1px solid;
+    border-radius: 3px;
+    padding: 10px;
+    z-index: 10;
+    box-shadow: 5px 5px 15px gray;
+}
+
+.help-box .close-buton{
+    float:right;
+    
+}
+
+
+.pum-theme-22554 .pum-container, .pum-theme-lightbox .pum-container{
+    padding: 0px !important;
+    border-radius: 1px !important;
+    border-width: 1px !important;
 }

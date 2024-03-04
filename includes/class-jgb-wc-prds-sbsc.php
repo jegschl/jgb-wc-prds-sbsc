@@ -61,6 +61,8 @@ class Jgb_Wc_Prds_Sbsc {
 
 	protected $ProductFieldsManager;
 
+	protected $CPT_WcProdSbsc_register;
+
 	public static $static_plugin_name;
 
 	/**
@@ -120,10 +122,18 @@ class Jgb_Wc_Prds_Sbsc {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jgb-wc-prds-sbsc-i18n.php';
 
 		/**
+		 * Carga la clase para registrar el CPT de definición de wc-prod-sbsc.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpsbsc-post-type.php';
+		
+		/**
 		 * Carga el gestor de plantillas.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tpltr.php';
 
+		/**
+		 * Carga el Widget Base.
+		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/widgetsman/widget-base.php';
 
 		$atfs = JGB\FormWidgetBase::get_allowed_types();
@@ -154,6 +164,7 @@ class Jgb_Wc_Prds_Sbsc {
 
 		$this->ProductFieldsManager = new JGB\WPSBSC\ProductFieldsManager();
 
+		$this->CPT_WcProdSbsc_register = new JGB\WPSBSC\SBSCDefinitionPostType();
 	}
 
 	/**
@@ -190,6 +201,11 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_filter( 'woocommerce_product_data_tabs', $plugin_admin, 'product_tabs' );
 		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'wc_prds_sbsc_tab' );
 
+		$this->loader->add_action( 'init', $this->CPT_WcProdSbsc_register, 'register' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_scripts' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_styles' );
+		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_json_editor');
+		$this->loader->add_action( 'save_post', $this->CPT_WcProdSbsc_register, 'save_post');
 	}
 
 	/**

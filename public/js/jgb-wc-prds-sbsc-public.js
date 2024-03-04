@@ -140,36 +140,52 @@ const crystalsPrices = [
 	
 ];
 
+function cpFirstMatch(){
+	const ftrdCombsVls = {
+		'receta':null,
+		'tipo-de-lente':null,
+		'material-lente':null,
+		'tratamiento-cristal':null
+	};
+	let i = 0;
+
+	selectedFeatures.forEach(function(e){
+		//console.log('Valor de ' + e.label + ': ' + e.value + '.');
+		ftrdCombsVls[e.field] = e.value;
+	});
+
+	if( ftrdCombsVls['receta'] == null ){
+		return  [null, null];
+	}
+
+	if( ftrdCombsVls['tipo-de-lente'] == null ){
+		return [null, null];
+	}
+
+	if( ftrdCombsVls['material-lente'] == null ){
+		return [null, null];
+	}
+
+	if( ftrdCombsVls['tratamiento-cristal'] == null ){
+		return [null, null];
+	}
+
+	for(i=0; i<  crystalsPrices.length ; i++){
+		if(
+			crystalsPrices[i]['receta'] == ftrdCombsVls['receta'] &&
+			crystalsPrices[i]['tipo-de-lente'] == ftrdCombsVls['tipo-de-lente'] &&
+			crystalsPrices[i]['material-lente'] == ftrdCombsVls['material-lente'] &&
+			crystalsPrices[i]['tratamiento-cristal'] == ftrdCombsVls['tratamiento-cristal']
+		){
+			return [crystalsPrices[i],i];
+		}
+	}
+
+	return [null, null];
+}
+
 (function( $ ) {
 	'use strict';
-
-	/**
-	 * All of the code for your public-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
 
 	function desplegarSFs(){
 		const sfcSlctr = ".selected-features-container";
@@ -186,49 +202,7 @@ const crystalsPrices = [
 		$(sfcSlctr).html(html);
 	}
 
-	function cpFirstMatch(){
-		const ftrdCombsVls = {
-			'receta':null,
-			'tipo-de-lente':null,
-			'material-lente':null,
-			'tratamiento-cristal':null
-		};
-		let i = 0;
-
-		$(selectedFeatures).each(function(i,e){
-			//console.log('Valor de ' + e.label + ': ' + e.value + '.');
-			ftrdCombsVls[e.field] = e.value;
-		});
-
-		if( ftrdCombsVls['receta'] == null ){
-			return;
-		}
-
-		if( ftrdCombsVls['tipo-de-lente'] == null ){
-			return;
-		}
-
-		if( ftrdCombsVls['material-lente'] == null ){
-			return;
-		}
-
-		if( ftrdCombsVls['tratamiento-cristal'] == null ){
-			return;
-		}
-
-		for(i=0; i<  crystalsPrices.length ; i++){
-			if(
-				crystalsPrices[i]['receta'] == ftrdCombsVls['receta'] &&
-				crystalsPrices[i]['tipo-de-lente'] == ftrdCombsVls['tipo-de-lente'] &&
-				crystalsPrices[i]['material-lente'] == ftrdCombsVls['material-lente'] &&
-				crystalsPrices[i]['tratamiento-cristal'] == ftrdCombsVls['tratamiento-cristal']
-			){
-				return [crystalsPrices[i],i];
-			}
-		}
-
-		return [null, null];
-	}
+	
 
 	function checkAdditionalFields(){
 		const actStep = swiper.activeIndex;
@@ -254,7 +228,7 @@ const crystalsPrices = [
 		
 		[cp,i] = cpFirstMatch();
 
-		price = cp['price'];
+		if( cp != null){ price = cp['price']; }
 
 		if( price != null ){
 			intf = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
@@ -354,6 +328,22 @@ const crystalsPrices = [
 
 		$('.swiper-slide .step .nav-buttons .forward').click(function(){
 			swiper.slidePrev(speed);
+		});
+
+		$('.help-box .close-buton').click((evnt)=>{
+			if( ! $(evnt.target).closest('.help-box').hasClass('hidden') ){
+				$(evnt.target).closest('.help-box').addClass('hidden');
+			}
+		});
+
+		$('.step .help-link').each((i,e)=>{
+			$(e).click((evnt)=>{
+				const hbDataIdToShow = $(evnt.target).data('show-hb-id');
+				const hbets = $('.help-box[data-hb-id="' + hbDataIdToShow + '"]');
+				if( $(hbets).hasClass('hidden') ){
+					$(hbets).removeClass('hidden');
+				}
+			})
 		});
 
 	});
