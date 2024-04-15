@@ -63,6 +63,8 @@ class Jgb_Wc_Prds_Sbsc {
 
 	protected $CPT_WcProdSbsc_register;
 
+	protected $short_code_DefPT;
+
 	public static $static_plugin_name;
 
 	/**
@@ -109,52 +111,60 @@ class Jgb_Wc_Prds_Sbsc {
 	 */
 	private function load_dependencies() {
 
+		$dir_name = dirname( __FILE__ );
+		$plugin_dir_path = plugin_dir_path( $dir_name );
+
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jgb-wc-prds-sbsc-loader.php';
+		require_once $plugin_dir_path . 'includes/class-jgb-wc-prds-sbsc-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jgb-wc-prds-sbsc-i18n.php';
+		require_once $plugin_dir_path . 'includes/class-jgb-wc-prds-sbsc-i18n.php';
 
 		/**
 		 * Carga la clase para registrar el CPT de definición de wc-prod-sbsc.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpsbsc-post-type.php';
+		require_once $plugin_dir_path . 'includes/class-wpsbsc-post-type.php';
+
+		/**
+		 * Carga la clase para registrar el shortcode de CPT de definición de wc-prod-sbsc.
+		 */
+		require_once $plugin_dir_path . 'includes/class-wpsbsc-pt-short-code.php';
 		
 		/**
 		 * Carga el gestor de plantillas.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-tpltr.php';
+		require_once $plugin_dir_path . 'includes/class-tpltr.php';
 
 		/**
 		 * Carga el Widget Base.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/widgetsman/widget-base.php';
+		require_once $plugin_dir_path . 'includes/widgetsman/widget-base.php';
 
 		$atfs = JGB\FormWidgetBase::get_allowed_types();
 		foreach( $atfs as $atf){
-			require_once plugin_dir_path( dirname( __FILE__ ) ) . "includes/widgetsman/widgets/$atf.php";
+			require_once $plugin_dir_path . "includes/widgetsman/widgets/$atf.php";
 		}
 
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/widgetsman/widgets-factory.php';
+		require_once $plugin_dir_path . 'includes/widgetsman/widgets-factory.php';
 
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/product-fields-manager.php';
+		require_once $plugin_dir_path . 'includes/product-fields-manager.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jgb-wc-prds-sbsc-admin.php';
+		require_once $plugin_dir_path . 'admin/class-jgb-wc-prds-sbsc-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-jgb-wc-prds-sbsc-public.php';
+		require_once $plugin_dir_path . 'public/class-jgb-wc-prds-sbsc-public.php';
 
 		
 
@@ -165,6 +175,8 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->ProductFieldsManager = new JGB\WPSBSC\ProductFieldsManager();
 
 		$this->CPT_WcProdSbsc_register = new JGB\WPSBSC\SBSCDefinitionPostType();
+
+		$this->short_code_DefPT = new JGB\WPSBSC\SBSCDefPTShortCode( $plugin_dir_path );
 	}
 
 	/**
@@ -205,6 +217,7 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_scripts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_styles' );
 		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_json_editor');
+		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_choices_importer' );
 		$this->loader->add_action( 'save_post', $this->CPT_WcProdSbsc_register, 'save_post');
 	}
 

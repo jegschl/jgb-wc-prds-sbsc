@@ -111,12 +111,35 @@ class SBSCDefinitionPostType{
         );
     }
 
+    public function add_meta_box_choices_importer() {
+        add_meta_box(
+            'meta_box_choices_importer',
+            'Importador de arbol decisivo',
+            [ $this, 'render_metabox_choices_tree_importer'],
+            JGB_WPSBSC_CPT_NM_SBSC_DEFINITION,
+            'normal',
+            'high'
+        );
+    }
+
     public function render_metabox_json_field( $post ){
         // Recupera el valor actual del contenido del campo
         $this->main_content_json = get_post_field('post_content', $post->ID);
         ?>
         <input name="<?= JGB_WPSBSC_CPT_URP_NM_MAIN_CONTENT ?>" type="hidden">
         <div id="<?= JGB_WPSBSC_CPT_URP_NM_MAIN_CONTENT ?>"  style="width: 100%; height: 600px"></div>
+        <?php
+    }
+
+    public function render_metabox_choices_tree_importer( $post ){
+        ?>
+        <input name="post-id" type="hidden" value="<?= $post->ID ?>">
+        <div id="choices-tree-input">
+            <textarea></textarea>
+        </div>
+        <div class="import-button-wrapper">
+            <div class="button">Importar</div>
+        </div>
         <?php
     }
 

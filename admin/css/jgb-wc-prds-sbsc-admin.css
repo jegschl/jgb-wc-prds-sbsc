@@ -2,3 +2,8 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+
+ .postbox-container #meta_box_choices_importer #choices-tree-input textarea{
+    resize: vertical; 
+    width: 100%;
+ }

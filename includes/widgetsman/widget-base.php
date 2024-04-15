@@ -47,34 +47,35 @@ class FormWidgetBase{
             $this->default_value = $params['default_value'];
             $this->classes = $params['classes'];
             $this->base_path = $params['base_path'];
+            $this->set_frontend_template_path();
         }
     }
 
-    protected function get_classes(){
+    public function get_classes(){
         return $this->classes;
     }
 
-    protected function get_default_value(){
+    public function get_default_value(){
         return $this->default_value;
     }
 
-    protected function get_tooltip(){
+    public function get_tooltip(){
         return $this->tooltip;
     }
 
-    protected function get_description(){
+    public function get_description(){
         return $this->description;
     }
 
-    protected function get_label(){
+    public function get_label(){
         return $this->label;
     }
 
-    protected function get_name(){
+    public function get_name(){
         return $this->name;
     }
 
-    protected function get_id(){
+    public function get_id(){
         return $this->id;
     }
 
@@ -163,7 +164,7 @@ class FormWidgetBase{
         return $this->type;
     }
 
-    protected function render_configurator()
+    public  function render_configurator()
     {
 
     }
@@ -172,7 +173,7 @@ class FormWidgetBase{
 
     }
 
-    protected function render_frontend()
+    public  function render_frontend()
     {
         if( file_exists( $this->frontend_template_path ) ){
             \load_template( $this->frontend_template_path, false, ['widget' => $this ] );
@@ -184,7 +185,7 @@ class FormWidgetBase{
         $filenm = $this->type . '.php';
 
         $ptt  = get_stylesheet_directory();
-        $ptt .= $subdir;
+        $ptt .= $subdir . '/';
         $ptt .= $filenm;
 
         if( file_exists( $ptt ) ){
@@ -193,7 +194,7 @@ class FormWidgetBase{
         }
 
         $ptt  = get_template_directory();
-        $ptt .= $subdir;
+        $ptt .= $subdir . '/';
         $ptt .= $filenm;
 
         if( file_exists( $ptt ) ){
@@ -201,8 +202,9 @@ class FormWidgetBase{
             return;
         }
 
+        $subdir = 'widgets/frontend';
         $ptt  = trailingslashit( $this->base_path );
-        $ptt .= $subdir;
+        $ptt .= $subdir . '/';
         $ptt .= $filenm;
 
         if( file_exists( $ptt ) ){
@@ -226,7 +228,7 @@ class FormWidgetWithVisualOptsBase extends FormWidgetBase {
         $this->options = $params['options'];
     }
 
-    protected function get_options(){
+    public function get_options(){
         return $this->options;
     }
 }
