@@ -67,6 +67,26 @@ class SBSCDefinitionPostType{
             wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true );
 
 
+            $sbn   = "jgb-mem-sheet-mtx";
+            $sid   = $sbn . "-js";
+            $sbfn  = $sbn . ".js";
+            $surl  = $plg_dir . 'admin/js/' . $sbfn;
+            $spath = $plg_dir . 'admin/js/' . $sbfn;
+            $sftk  = filemtime($spath);
+
+            wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true );
+
+
+            $sbn   = "jquery.blockUI";
+            $sid   = $sbn . "-js";
+            $sbfn  = $sbn . ".js";
+            $surl  = $plg_dir . 'assets/js/lib/' . $sbfn;
+            $spath = $plg_dir . 'assets/js/lib/' . $sbfn;
+            $sftk  = filemtime($spath);
+
+            wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true );
+
+
             $sbn   = JGB_WPSBSC_CPT_NM_SBSC_DEFINITION . "-admin";
             $sid   = $sbn . "-js";
             $sbfn  = $sbn . ".js";
@@ -74,7 +94,7 @@ class SBSCDefinitionPostType{
             $spath = $plg_dir . 'admin/js/' . $sbfn;
             $sftk  = filemtime($spath);
 
-            wp_enqueue_script( $sid, $surl, array('jquery','jsoneditor.min-js'), $sftk, true );
+            wp_enqueue_script( $sid, $surl, array('jquery','jsoneditor.min-js','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
 
 
             wp_localize_script( $sid, 'JGB_WPSBSC_CPT_DEF_DATA', $dt );
