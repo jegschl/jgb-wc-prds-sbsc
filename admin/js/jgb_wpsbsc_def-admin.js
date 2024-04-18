@@ -1,6 +1,22 @@
 let adminFrontJsonEditor;
 let msm;
 
+function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+    return false;
+};
+
 (function( $ ) {
 	'use strict';
 
@@ -42,6 +58,8 @@ let msm;
 
 		$('.import-button-wrapper .button').click( () => {
             $.blockUI();
+
+            const postId = getUrlParameter('post');
 			
             const t = $('#choices-tree-input textarea').val();
 			if( msm == null ){
@@ -50,10 +68,15 @@ let msm;
 				msm.read( t );
 			}
 
+            const dti = {
+                postId: postId,
+                data: msm.getMatrix()
+            };
+
 			const as = {
 				url: '/wp-json/jgb-wpsbsc/v1/td-import/',
 				method: 'POST',
-				data: msm.getJson(),
+				data: JSON.stringify( dti ),
 				contentType: 'application/json; charset=UTF-8',
 				error: ( jqXHR, textStatus, errorThrown ) => {
                     console.log( 'Error procesando solicitud...');
