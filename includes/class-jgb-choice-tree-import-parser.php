@@ -161,6 +161,8 @@ class JGBWPSChoiceTreeImportParser{
             }
 
         }
+
+        //time();
         
     }
 
@@ -318,6 +320,13 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function process_col_value_type_data( $currentFldData, $data, $subParameter, $soc, $ctip ){
+        if( is_null( $data ) && empty( $data ) && ( trim( $data ) == '-' ) ){
+            return $currentFldData;
+        }
+
+        if( isset( $currentFldData['value-def']['vcs-match'] ) && !empty( $currentFldData['value-def']['vcs-match'] ) && isset( $this->vcsInProcess[ $currentFldData['value-def']['vcs-match'] ] )){
+            $this->vcsInProcess[ $currentFldData['value-def']['vcs-match'] ]['data-value'] = trim( $data );
+        }
 
         return $currentFldData;
     }
@@ -330,16 +339,19 @@ class JGBWPSChoiceTreeImportParser{
 
                 if( !isset( $this->vcsInProcess[ $vcs ] ) ){
                     
-                    $this->vcsInProcess[ $vcs ] = [];
+                    $this->vcsInProcess[ $vcs ] = [
+                        'values-slugs-combinations' => [],
+                        'data-value' => null
+                    ];
 
                 }
 
-                $this->vcsInProcess[ $vcs ][] = $this->currentValueSlugInVTM;
+                $this->vcsInProcess[ $vcs ]['values-slugs-combinations'][] = $this->currentValueSlugInVTM;
 
             }
 
         }
-        
+
     }
 
     function store_vcs_in_process(){
