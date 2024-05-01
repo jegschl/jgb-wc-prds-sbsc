@@ -157,6 +157,8 @@ class Jgb_Wc_Prds_Sbsc {
 
 		require_once $plugin_dir_path . 'includes/product-fields-manager.php';
 
+		require_once $plugin_dir_path . 'includes/class-jgb-choice-tree-import-parser.php';
+
 		require_once $plugin_dir_path . 'includes/class-jwps-apirest.php';
 
 		/**
@@ -185,6 +187,7 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->short_code_DefPT = new JGB\WPSBSC\SBSCDefPTShortCode( $plugin_dir_path );
 
 		$this->adm_api_rest = new JWPSAdminApiRest();
+		$this->adm_api_rest->set_cti_parser(); 
 	}
 
 	/**
