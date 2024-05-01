@@ -27,9 +27,12 @@ class JGBWPSChoiceTreeImportParser{
 
     protected $valuesCombinationSets;
 
+    protected $vcsInProcess;
+
     protected $currentValueSlugInVTM;
 
     protected $previousValueSlugRoSNotMultiple; // Store last value slug in the same reading row.
+    
     protected $previousFieldSlugRoSNotMultiple; // Store last field slug in the same reading row.
 
     function __construct( $data = null )
@@ -97,6 +100,8 @@ class JGBWPSChoiceTreeImportParser{
         $this->set_items_parsers_hooks();
 
         $this->set_value_def_type_parsers_hooks();
+
+        $this->valuesCombinationSets = [];
     }
 
     function get_allowed_parameters(){
@@ -127,18 +132,32 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function process_input( $data ){
+        
         $this->linesCount = count( $data );
+        
         foreach( $data as $this->currentLine => $fld_inf_reg ){
 
             if( is_array($fld_inf_reg) && !empty( $fld_inf_reg ) && ($this->parse_first_column( $fld_inf_reg[0] ) == JGB_WPS_CHCTREE_FIRST_COL_PARSING_OK ) ){
+                
                 $firLen = count( $fld_inf_reg );
+               
                 for( $i = 1; $i < $firLen; $i++ ){
+                   
                     $this->currentSoC = $i - 1;
+                    
                     $this->process_data_column( $fld_inf_reg[ $i ] );
                 }
 
+                $this->previousFieldSlugRoSNotMultiple = null;
+
+                $this->previousValueSlugRoSNotMultiple = null;
+
+                $this->store_vcs_in_process();
+
             } else {
+
                 continue;
+
             }
 
         }
@@ -179,7 +198,19 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function process_dt_col_fld_vcs( $currentData, $data, $subParameter, $soc, $ctip ){
+
         $currentData['values-combination-set'] = explode(',',$data);
+
+        foreach( $currentData['values-combination-set'] as $vcs ){
+            
+            if( !array_key_exists( $vcs, $this->valuesCombinationSets ) ){
+
+                $this->valuesCombinationSets[ $vcs ] = [];
+
+            }
+
+        }
+
         return $currentData;
     }
 
@@ -280,11 +311,21 @@ class JGBWPSChoiceTreeImportParser{
         return $currentFldData;
     }
 
+    function store_vcs_in_process(){
+        
+        if( count( $this->vcsInProcess ) ){
+            
+            foreach( $this->vcsInProcess as $k => $vcsIP ){
+                $this->valuesCombinationSets[$k][] = $vcsIP;
+            }
+
+            $this->vcsInProcess = [];
+
+        }
+
+    }
+
     function parse_first_column( $data ){
-
-        $this->previousFieldSlugRoSNotMultiple = null;
-
-        $this->previousValueSlugRoSNotMultiple = null;
 
         [$fld_parameter, $fld_sub_param] = explode(':',$data);
 
