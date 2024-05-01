@@ -260,25 +260,33 @@ class JGBWPSChoiceTreeImportParser{
         $nv = [];
 
         if( isset( $currentFldData['value-def']['value-type'] ) && $currentFldData['value-def']['value-type'] == 'multiple' ){
+            
             $array_values = explode(',',$data);
+            
             foreach( $array_values as $vl ){
+               
                 $nv['multiple'] = [];
+                
                 $nv['multiple'][] = [
                     'slug' => sanitize_title( $vl ),
                     'label' => $vl
                 ];
+                
                 if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
+                   
                     $nv['parent']=[
                         'value_slug' => $this->previousValueSlugRoSNotMultiple,
                         'field_slug' => $this->previousFieldSlugRoSNotMultiple 
                     ];
+
                 }
+
             }
             
         } else {
         
-        
             $this->currentValueSlugInVTM = sanitize_title( $data );
+
             $matchs = array_filter( $currentFldData['value-def']['values'],[$this,'checkValues'],ARRAY_FILTER_USE_BOTH);
 
             if( count( $matchs ) == 0 ){
@@ -288,6 +296,7 @@ class JGBWPSChoiceTreeImportParser{
                 $nv['slug'] = sanitize_title( $data );
                 
                 if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
+                    
                     $nv['parent']=[
                         'value_slug' => $this->previousValueSlugRoSNotMultiple,
                         'field_slug' => $this->previousFieldSlugRoSNotMultiple 
@@ -301,6 +310,8 @@ class JGBWPSChoiceTreeImportParser{
 
             $this->previousValueSlugRoSNotMultiple = $this->currentValueSlugInVTM;
 
+            $this->check_field_for_process_vcs( $currentFldData );
+
         }
 
         return $currentFldData;
@@ -309,6 +320,26 @@ class JGBWPSChoiceTreeImportParser{
     function process_col_value_type_data( $currentFldData, $data, $subParameter, $soc, $ctip ){
 
         return $currentFldData;
+    }
+
+    function check_field_for_process_vcs( $currentFieldDataProcessing ){
+        
+        if( !is_null( $currentFieldDataProcessing['values-combination-set'] ) && is_array( $currentFieldDataProcessing['values-combination-set'] )){
+
+            foreach( $currentFieldDataProcessing['values-combination-set'] as $vcs ){
+
+                if( !isset( $this->vcsInProcess[ $vcs ] ) ){
+                    
+                    $this->vcsInProcess[ $vcs ] = [];
+
+                }
+
+                $this->vcsInProcess[ $vcs ][] = $this->currentValueSlugInVTM;
+
+            }
+
+        }
+        
     }
 
     function store_vcs_in_process(){
