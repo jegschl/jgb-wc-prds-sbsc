@@ -7,6 +7,8 @@ define('JGB_WPS_CHCTREE_FIRST_COL_PARSING_ERROR_SUB_PARAM_STRING_INVALID',2);
 define('JGB_WPS_CHCTREE_DATA_COL_PARSING_OK',0);
 define('JGB_WPS_CHCTREE_DATA_COL_PARSING_EMPTY',1);
 
+define('JGB_WPSBSC_ITEMS_DATA_TYPES', ['INT', 'DECIMAL', 'VARCHR'] );
+
 class JGBWPSChoiceTreeImportParser{
 
     protected $linesCount;
@@ -97,13 +99,11 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     private function set_fields_storer_by_type_hooks(){
+        
         $hooks_array = [
+            
             'radio' => [
                 'callback' => [$this,'sd_storer_type_radio'],
-                'priority' => 30
-            ],
-            'data' => [
-                'callback' => [$this,'sd_storer_type_data'],
                 'priority' => 30
             ]
 
@@ -371,8 +371,35 @@ class JGBWPSChoiceTreeImportParser{
             return $currentFldData;
         }
 
-        if( isset( $currentFldData['value-def']['vcs-match'] ) && !empty( $currentFldData['value-def']['vcs-match'] ) && isset( $this->vcsInProcess[ $currentFldData['value-def']['vcs-match'] ] )){
-            $this->vcsInProcess[ $currentFldData['value-def']['vcs-match'] ]['data-value'] = trim( $data );
+        $vcsm = '*';
+
+        if( 
+            isset( $currentFldData['value-def']['vcs-match'] ) 
+            && !empty( $currentFldData['value-def']['vcs-match'] ) 
+            
+        ){
+
+            $vcsm = $currentFldData['value-def']['vcs-match'];
+
+        }            
+
+        if( isset( $this->vcsInProcess[ $vcsm ] ) ){
+            
+            if( !isset( $this->vcsInProcess[ $vcsm ]['items'] ) ){
+                
+                $this->vcsInProcess[ $vcsm ]['items'] = [];
+                
+            }
+
+            $dataType = !in_array( $currentFldData['data_type'], JGB_WPSBSC_ITEMS_DATA_TYPES ) || empty( $currentFldData['data_type'] ) ? 'INT' : $currentFldData['data_type'];
+
+            $this->vcsInProcess[ $vcsm ]['items'][] = [
+                'slug'  => $currentFldData['slug'],
+                'label' => $currentFldData['label'],
+                'data_type' => $dataType,
+                'value' => trim( $data )
+            ];
+
         }
 
         return $currentFldData;
@@ -387,8 +414,7 @@ class JGBWPSChoiceTreeImportParser{
                 if( !isset( $this->vcsInProcess[ $vcs ] ) ){
                     
                     $this->vcsInProcess[ $vcs ] = [
-                        'values-slugs-combinations' => [],
-                        'data-value' => null
+                        'values-slugs-combinations' => []
                     ];
 
                 }
@@ -460,34 +486,6 @@ class JGBWPSChoiceTreeImportParser{
             ['post_id' => $this->postId ],
             ['%d']
         );
-
-    }
-
-    function sd_storer_type_data( $fld, $postId ){
-
-        global $wpdb;
-        
-        $pfx = $wpdb->prefix;
-
-        $data = [
-            'slug'      => $fld['slug'],
-            'label'     => $fld['label'],
-            'data_type' => 'INT',
-            'value'     => 
-        ];
-
-        $format = ['%d','%s','%s'];
-
-        if( $wpdb->insert(
-                "{$pfx}jgb_wpsbsc_fields",
-                $data,
-                $format
-            ) 
-        ){
-
-        }
-
-        return $fld;
 
     }
 
@@ -569,15 +567,51 @@ class JGBWPSChoiceTreeImportParser{
         }
     }
 
+    private function sd_vcs_items(){
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        foreach( $this->valuesCombinationSets as $k => $vcs ){
+
+            $query  = "SELECT * FROM {$pfx}jgb_wpsbsc_vls_cmbs_sets ";
+            $query .= "WHERE slug = \"$k\"";
+
+            $vcsQueryResults = $wpdb->get_row( $query, ARRAY_A );
+
+            if( is_Array( $vcsQueryResults ) && count( $vcsQueryResults ) > 0 ){
+
+                $vcsId = $vcsQueryResults['id'];
+
+            } else {
+                
+                $d = [
+                    'slug' => sanitize_title( $k ),
+                    'desc' => $k
+                ];
+                
+                /* if(
+                    $wpdb->insert(
+                        "{$pfx}jgb_wpsbsc_vls_cmbs_sets",
+                        $d
+                    )
+                ){
+                    $vcsId = $wpdb->insert_id;
+                } */
+            }
+        }
+    }
+
     private function store_data(){
 
         // reset old data.
         $this->sd_reset();
 
-        // storing fields y VCS.
+        // storing fields y VCS for radio type fields.
         $this->sd_fields();
 
-        
+        // Storing VCS's Slugs and items
+        $this->sd_vcs_items();
 
     }
 }
