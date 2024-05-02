@@ -35,6 +35,8 @@ class JGBWPSChoiceTreeImportParser{
     
     protected $previousFieldSlugRoSNotMultiple; // Store last field slug in the same reading row.
 
+    protected $postId;
+    
     function __construct( $data = null )
     {
         $this->setup();
@@ -94,12 +96,35 @@ class JGBWPSChoiceTreeImportParser{
         }
     }
 
+    private function set_fields_storer_by_type_hooks(){
+        $hooks_array = [
+            'radio' => [
+                'callback' => [$this,'sd_storer_type_radio'],
+                'priority' => 30
+            ],
+            'data' => [
+                'callback' => [$this,'sd_storer_type_data'],
+                'priority' => 30
+            ]
+
+        ];
+
+        $hooks_array = apply_filters( 'jgb/wpsbsc/import/fields_by_type_storer_hooks', $hooks_array );
+
+        foreach( $hooks_array as $hook_sufix => $hcb ){
+            add_filter('JGB/wpsbsc/store_field_data/type_' . $hook_sufix, $hcb['callback'], $hcb['priority'], 2 );
+        }
+    }
+
     private function setup(){
+
         $this->allowedFldParameters = $this->get_allowed_parameters();
 
         $this->set_items_parsers_hooks();
 
         $this->set_value_def_type_parsers_hooks();
+
+        $this->set_fields_storer_by_type_hooks();
 
         $this->valuesCombinationSets = [];
     }
@@ -129,6 +154,28 @@ class JGBWPSChoiceTreeImportParser{
                 return JGB_WPS_CHCTREE_FIRST_COL_PARSING_ERROR_PARAMETER_STRING_INVALID;
         }
         
+    }
+
+    function set_post_id( $pid ){
+        
+        if( empty( $pid ) ){
+            throw new Exception("Invalid post Id", 1);
+            return 1;
+        }
+
+        if( !( is_string( $pid ) || is_int( $pid ) ) ){
+            throw new Exception("Type Invalid for post Id", 2);
+            return 2;
+        }
+
+        if( is_string( $pid )  &&  !is_numeric( $pid ) ){
+            throw new Exception("Post Id string is not number", 3);
+            return 3;
+        }
+
+        $this->postId = $pid;
+
+        return 0;
     }
 
     function process_input( $data ){
@@ -162,7 +209,7 @@ class JGBWPSChoiceTreeImportParser{
 
         }
 
-        //time();
+        $this->store_data();
         
     }
 
@@ -391,5 +438,146 @@ class JGBWPSChoiceTreeImportParser{
         }
         
         return JGB_WPS_CHCTREE_FIRST_COL_PARSING_OK;
+    }
+
+
+    private function sd_reset(){
+        
+        global $wpdb;
+        
+        $pfx = $wpdb->prefix;
+
+        // Deleting fields.
+        $wpdb->delete(
+            "{$pfx}jgb_wpsbsc_fields",
+            ['post_id' => $this->postId ],
+            ['%d']
+        );
+
+        // deleting choices
+        $wpdb->delete(
+            "{$pfx}jgb_wpsbsc_choices_availables",
+            ['post_id' => $this->postId ],
+            ['%d']
+        );
+
+    }
+
+    function sd_storer_type_data( $fld, $postId ){
+
+        global $wpdb;
+        
+        $pfx = $wpdb->prefix;
+
+        $data = [
+            'slug'      => $fld['slug'],
+            'label'     => $fld['label'],
+            'data_type' => 'INT',
+            'value'     => 
+        ];
+
+        $format = ['%d','%s','%s'];
+
+        if( $wpdb->insert(
+                "{$pfx}jgb_wpsbsc_fields",
+                $data,
+                $format
+            ) 
+        ){
+
+        }
+
+        return $fld;
+
+    }
+
+    function sd_storer_type_radio( $fld, $postId ){
+        
+        global $wpdb;
+        
+        $pfx = $wpdb->prefix;
+
+        $data = [
+            'post_id' => $postId,
+            'slug'    => $fld['slug'],
+            'name'    => $fld['label']
+        ];
+
+        $format = ['%d','%s','%s'];
+
+        if( $wpdb->insert(
+                "{$pfx}jgb_wpsbsc_fields",
+                $data,
+                $format
+            ) 
+        ){
+            $fldId = $wpdb->insert_id;
+
+            $fld['stored_id'] = $fldId;
+
+            foreach( $fld['value-def']['values'] as &$vl ){
+                
+                $choices_data = [
+                    'post_id'  => $postId,
+                    'field_id' => $fldId,
+                    'selectable_value_slug' => $vl['slug'],
+                    'selectable_value_label'=> $vl['label']
+                ];
+
+                if( isset( $vl['parent'] ) ){
+
+                    $query = "SELECT * FROM {$pfx}jgb_wpsbsc_fields WHERE post_id = {$postId} AND slug = \"{$vl['parent']['field_slug']}\"";
+                    
+                    $r = $wpdb->get_row($query, ARRAY_A );
+                    
+                    if( is_Array( $r ) && count( $r ) > 0 ){
+                        
+                        $choices_data['parent_field_id'] = $r['id'];
+                        
+                        $choices_data['parent_on_browser_selected_slug_value'] = $vl['parent']['value_slug'];
+                    
+                    }
+                    
+                }
+
+                if( $wpdb->insert(
+                    "{$pfx}jgb_wpsbsc_choices_availables",
+                    $choices_data
+                    ) 
+                ){
+                    $vl['stored_id'] = $wpdb->insert_id;
+                }
+
+            }
+
+        }
+
+        return $fld;
+
+    }
+
+    private function sd_fields(){
+        
+        foreach( $this->processedFields as &$fld ){
+
+            $fld = apply_filters(
+                'JGB/wpsbsc/store_field_data/type_' . $fld['value-def']['type'],
+                $fld,
+                $this->postId
+            );
+
+        }
+    }
+
+    private function store_data(){
+
+        // reset old data.
+        $this->sd_reset();
+
+        // storing fields y VCS.
+        $this->sd_fields();
+
+        
+
     }
 }

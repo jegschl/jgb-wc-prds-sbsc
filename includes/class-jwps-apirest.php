@@ -40,6 +40,7 @@ class JWPSAdminApiRest {
     }
 
     public function receive_decision_tree_data( WP_REST_Request $r ){
+        
         $response = [ 'error' => ['status' => false, 'code' => 0 ] ];
 
         $data = $r->get_json_params();
@@ -47,13 +48,18 @@ class JWPSAdminApiRest {
         $response[ 'data' ] = $data;
 
         if( !isset( $this->ctImporter ) ){
+
             $response[ 'error' ] [ 'status'  ] = true ;
+
             $response[ 'error' ] [ 'code' ] = JGB_WPSBSC_APIREST_RESPONSE_ERR_IMPORT_TD_PARSER_EMPTY;
+           
             return new WP_REST_Response( $response );
         }
 
-        $response['processResult'] = $this->ctImporter->process_input( $data['data'] );
-
+        $this->ctImporter->set_post_id( $data['postId'] );
+        
+        $response['parsingProcessResult'] = $this->ctImporter->process_input( $data['data'] );
+        
         return new WP_REST_Response( $response );
     }
 
