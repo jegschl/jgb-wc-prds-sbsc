@@ -388,7 +388,7 @@ class JGBWPSChoiceTreeImportParser{
             if( !isset( $this->vcsInProcess[ $vcsm ]['items'] ) ){
                 
                 $this->vcsInProcess[ $vcsm ]['items'] = [];
-                
+
             }
 
             $dataType = !in_array( $currentFldData['data_type'], JGB_WPSBSC_ITEMS_DATA_TYPES ) || empty( $currentFldData['data_type'] ) ? 'INT' : $currentFldData['data_type'];
@@ -397,6 +397,7 @@ class JGBWPSChoiceTreeImportParser{
                 'slug'  => $currentFldData['slug'],
                 'label' => $currentFldData['label'],
                 'data_type' => $dataType,
+                'item_type' => 'DATA',
                 'value' => trim( $data )
             ];
 
@@ -473,6 +474,112 @@ class JGBWPSChoiceTreeImportParser{
         
         $pfx = $wpdb->prefix;
 
+        
+
+        /* Buscar Ids de choices_availables relacionados con el postid actual. COn
+           esto tenemos todos la lista de registros de IDs de choices_availables que
+           se deben eliminar. */
+
+        $q  = "SELEC id FROM {$pfx}jgb_wpsbsc_choices_availables ";
+        $q .= "WHERE post_id = {$this->postId}";
+
+        $choices_availables_ids = $wpdb->get_col( $q );
+
+
+
+        /* Con la lista de IDs de choices_availables se puede obtener la lista de 
+           choices_combinations que ya no se usarán */
+        
+        $choices_combinations_ids = [];
+        
+        foreach( $choices_availables_ids as $caid ){
+
+            $q  = "SELECT id FROM {$pfx}jgb_wpsbsc_choices_combinations ";
+            $q .= "WHERE vls_ids_combinations_string LIKE \"%{$caid}%\"";
+
+            $tawCCI = $wpdb->get_col( $q );
+
+            foreach( $tawCCI as $t ){
+
+                if( !in_array( $t, $choices_combinations_ids ) ){
+                    
+                    $choices_combinations_ids[] = $t;
+
+                }
+
+            }
+
+        }
+
+        /* Con la lista de choices_combinations que no se utilizarán se pueden obtener
+           la lista de items de la tabla vcs_items según su tipo (DATA o FIELD) que ya 
+           no se usarán. */
+        $vcs_items_ids   = [];
+        $items_DATA_ids  = [];
+        $items_FIELD_ids = [];
+
+        foreach( $choices_combinations_ids as $cci ){
+
+            $q  = "SELECT id, id_item, item_type FROM {$pfx}jgb_wpsbsc_vcs_items ";
+            $q .= "WHERE id_choice_combination = $cci";
+
+            foreach( $wpdb->get_results( $q, ARRAY_A ) as $itm ){
+
+                $vcs_items_ids[] = $itm['id'];
+
+                if( empty( $itm['item_type'] ) || ( $itm['item_type'] == 'DATA' ) ){
+                    $items_DATA_ids[] = $itm['id_item'];
+                }
+
+                if( $itm['item_type'] == 'FIELD' ){
+                    $items_FIELD_ids[] = $itm['id_item'];
+                }
+            }
+        }
+
+        /* Eliminar items FIELD de tabla items_field. */
+        $itrs = '';
+        $i = 0;
+        foreach( $items_FIELD_ids as $id ){
+            $itrs .= $i > 0 ? ',' : '';
+            $itrs .= $id;        
+        }
+        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_field ";
+        $q .= "WHERE id IN ($itrs)";
+        $wpdb->query( $q );
+
+        /* ELiminar items DATA de tabla items_data. */
+        $itrs = '';
+        $i = 0;
+        foreach( $items_DATA_ids as $id ){
+            $itrs .= $i > 0 ? ',' : '';
+            $itrs .= $id;        
+        }
+        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_data ";
+        $q .= "WHERE id IN ($itrs)";
+        $wpdb->query( $q );
+
+        /* Eliminar items de tabla vcs_items. */
+        $itrs = '';
+        $i = 0;
+        foreach( $vcs_items_ids as $id ){
+            $itrs .= $i > 0 ? ',' : '';
+            $itrs .= $id;        
+        }
+        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_vcs_items ";
+        $q .= "WHERE id IN ($itrs)";
+        $wpdb->query( $q );
+
+        /* Eliminar registros de tabla choices_available */
+        $wpdb->delete(
+            "{$pfx}jgb_wpsbsc_choices_availables",
+            ['post_id' => $this->postId ],
+            ['%d']
+        );
+
+        /* Eliminar todos los registros choices_combinatios que contengan en la cadena 
+           de IDs de choices el id de algún choices available. */
+        
         // Deleting fields.
         $wpdb->delete(
             "{$pfx}jgb_wpsbsc_fields",
@@ -480,12 +587,7 @@ class JGBWPSChoiceTreeImportParser{
             ['%d']
         );
 
-        // deleting choices
-        $wpdb->delete(
-            "{$pfx}jgb_wpsbsc_choices_availables",
-            ['post_id' => $this->postId ],
-            ['%d']
-        );
+        
 
     }
 
@@ -579,6 +681,8 @@ class JGBWPSChoiceTreeImportParser{
 
             $vcsQueryResults = $wpdb->get_row( $query, ARRAY_A );
 
+            $vcsId = '';
+
             if( is_Array( $vcsQueryResults ) && count( $vcsQueryResults ) > 0 ){
 
                 $vcsId = $vcsQueryResults['id'];
@@ -586,20 +690,156 @@ class JGBWPSChoiceTreeImportParser{
             } else {
                 
                 $d = [
-                    'slug' => sanitize_title( $k ),
+                    'slug' => $k,
                     'desc' => $k
                 ];
                 
-                /* if(
+                if(
                     $wpdb->insert(
                         "{$pfx}jgb_wpsbsc_vls_cmbs_sets",
                         $d
                     )
                 ){
                     $vcsId = $wpdb->insert_id;
-                } */
+                }
             }
+
+            if( $vcsId != '' ){
+
+                foreach( $vcs as $sc ){
+
+                    $choicesCombinationId = $this->sd_slugs_combination( $sc['values-slugs-combinations'] );
+                    
+                    $vcsItemsIdsAndType = $this->sd_vcs_items_data( $sc['items'], $choicesCombinationId );
+                    
+                    $this->sd_vcs_items_link( $vcsItemsIdsAndType, $choicesCombinationId );
+
+                }
+                
+            }
+
         }
+
+    }
+
+    private function sd_vcs_items_link( Array $viiat, $cci ){
+
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        $rids = [];
+
+        foreach( $viiat as $itm ){
+
+            if( $wpdb->insert( 
+                    "{$pfx}jgb_wpsbsc_vcs_items",
+                    [ 
+                        'id_choice_combination' => $cci,
+                        'item_type'             => $itm['item_type'],
+                        'id_item'               => $itm['id'],
+                        'data_type'             => $itm['data_type'],
+                        'slug'                  => $itm['slug'],
+                        'label'                 => $itm['label']    
+                    ]
+                )
+            ){
+
+                $itm['link_id'] = $wpdb->insert_id;
+
+            }
+
+            $rids[] = $itm;
+
+        }
+
+        return $rids;
+
+    }
+
+    private function sd_slugs_combination( Array $slugs ){
+
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        $slugsString = '';
+
+        foreach( $slugs as $k => $slug ){
+            
+            $query  = "SELECT * FROM {$pfx}jgb_wpsbsc_choices_availables ";
+            $query .= "WHERE selectable_value_slug = \"$slug\"";
+
+            $row = $wpdb->get_row( $query, ARRAY_A );
+
+            if( is_array( $row ) && count( $row ) > 0 ){
+
+                $slugsString .= $k > 0 ? ':' : '';
+
+                $slugsString .= $row['id'];
+
+            }
+
+        }
+
+        $query  = "SELECT * FROM {$pfx}jgb_wpsbsc_choices_combinations ";
+        $query .= "WHERE vls_ids_combinations_string = \"$slugsString\"";
+
+        $row = $wpdb->get_row( $query, ARRAY_A );
+
+        if( is_array( $row ) && count( $row ) > 0 ){
+
+            return $row['id'];
+
+        } else {
+
+            if( $wpdb->insert(
+                    "{$pfx}jgb_wpsbsc_choices_combinations",
+                    ['vls_ids_combinations_string' => $slugsString ]
+                )
+            ){
+
+                return $wpdb->insert_id;
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+    private function sd_vcs_items_data( $itms, $cci ){
+
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        $viiat = [];
+
+        foreach( $itms as $k => $itm ){
+
+            $tbl  = "{$pfx}jgb_wpsbsc_items_";
+            $tbl .= $itm['item_type'] == 'DATA' ? "data" : "field";
+
+            if( $wpdb->insert( 
+                    $tbl,
+                    [ 
+                        'value'     => $itm['value']
+                    ]
+                )
+            ){
+
+                $itm['id'] = $wpdb->insert_id;
+
+            }
+
+            $viiat[] = $itm;
+
+        }
+
+        return $viiat;
+
     }
 
     private function store_data(){
