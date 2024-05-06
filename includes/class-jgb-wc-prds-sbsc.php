@@ -229,6 +229,7 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_styles' );
 		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_json_editor');
 		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_choices_importer' );
+		$this->loader->add_action( 'add_meta_boxes', $this->CPT_WcProdSbsc_register, 'add_meta_box_options' );
 		$this->loader->add_action( 'save_post', $this->CPT_WcProdSbsc_register, 'save_post');
 
 		$this->loader->add_Action( 'rest_api_init', $this->adm_api_rest, 'registerEndpoints' );

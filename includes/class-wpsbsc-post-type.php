@@ -5,6 +5,7 @@ namespace JGB\WPSBSC;
 define( 'JGB_WPSBSC_HOOK_DEF_SBSC_DEFINITION_CPT_ARGS','JGB/WPSBSC/DefinitionCptDefaultArgs');
 define( 'JGB_WPSBSC_CPT_NM_SBSC_DEFINITION','jgb_wpsbsc_def');
 define( 'JGB_WPSBSC_CPT_URP_NM_MAIN_CONTENT', 'main_json_content' );
+define( 'JGB_WPSBSC_CPT_MKNM_OPTIONS', 'jgb_wpsbsc_cpt_def_opts');
 class SBSCDefinitionPostType{
 
     protected $args;
@@ -142,6 +143,17 @@ class SBSCDefinitionPostType{
         );
     }
 
+    public function add_meta_box_options(){
+        add_meta_box(
+            'meta_box_options',
+            'Opciones',
+            [ $this, 'render_metabox_options'],
+            JGB_WPSBSC_CPT_NM_SBSC_DEFINITION,
+            'normal',
+            'high'
+        );
+    }
+
     public function render_metabox_json_field( $post ){
         // Recupera el valor actual del contenido del campo
         $this->main_content_json = get_post_field('post_content', $post->ID);
@@ -163,6 +175,50 @@ class SBSCDefinitionPostType{
         <?php
     }
 
+    public function render_metabox_options( $post ){
+        $opts = get_post_meta( $post->ID, JGB_WPSBSC_CPT_MKNM_OPTIONS, true );
+        $opts = $opts ? $opts : [
+            'visualization-mode' => 'json-data',
+            'product-categories' => 0
+        ];
+        $vmjd = $opts['visualization-mode'] == 'json-data' ? 'checked' : '';
+        $vmdt = $opts['visualization-mode'] == 'tree-choices' ? 'checked' : '';
+        $nocat = $opts['product-categories'] == 0 ? 'selected' : '';
+
+        ?>
+        <div id="visualization-mode">
+
+            <div class="radio">
+                <input type="radio" name="visualization-mode" value="json-data" id="r-vm-json" <?= $vmjd ?>>
+                <label  for="r-vm-json"><p>Datos JSON</p></label>
+            </div>
+
+            <div class="radio">
+                <input type="radio" name="visualization-mode" value="tree-choices" id="r-vm-dtree" <?= $vmdt ?> >
+                <label  for="r-vm-dtree"><p>Arbol decisivo</p></label>
+            </div>
+    
+        </div>
+        
+        <div id="woocommerce-categories">
+            <select id="product-categories" name="product-category">
+                <option value="0" <?= $nocat ?>>Seleccionar categoría</option>
+                <?php
+                    $product_categories = get_terms( 'product_cat', [
+                        'hide_empty' => true
+                    ] );
+                   
+                    foreach( $product_categories as $category ){
+                        $selected = $opts['product-categories'] == $category->term_id ? 'selected' : '';
+                        echo '<option value="' . $category->term_id . '" '.$selected.'>' . $category->name . '</option>';
+                    }
+                ?>
+            </select>
+        </div>
+        <?php
+
+    }
+
     function save_post($post_id) {
         if (isset($_POST[JGB_WPSBSC_CPT_URP_NM_MAIN_CONTENT])) {
             $rjson_data = wp_kses_post($_POST[JGB_WPSBSC_CPT_URP_NM_MAIN_CONTENT]);
@@ -170,8 +226,16 @@ class SBSCDefinitionPostType{
             // Actualizar el contenido del CPT
 
             remove_action('save_post',[ $this , 'save_post' ]);
+
             wp_update_post(array('ID' => $post_id, 'post_content' => $rjson_data));
-            add_Action('save_post', [ $this, 'save_post' ]);
+
+            $opts = [
+                'visualization-mode' => $_POST['visualization-mode'],
+                'product-categories' => $_POST['product-category']
+            ];
+            update_post_meta( $post_id, JGB_WPSBSC_CPT_MKNM_OPTIONS, $opts );
+
+            add_action('save_post', [ $this, 'save_post' ]);
         }
     }
 }

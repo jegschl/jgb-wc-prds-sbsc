@@ -7,3 +7,31 @@
     resize: vertical; 
     width: 100%;
  }
+
+ .postbox-container  #meta_box_options #visualization-mode{
+   width: 100%;
+   display: flex;
+   justify-content: start;
+ }
+
+ .postbox-container  #meta_box_options #visualization-mode .radio{
+   display: flex;
+
+ }
+
+.postbox-container  #meta_box_options #visualization-mode .radio{
+   margin-left: 15px;
+}
+
+ .postbox-container  #meta_box_options #visualization-mode .radio:nth-of-type(1){
+   margin-left: 0px !important; 
+ }
+
+ .postbox-container  #meta_box_options #visualization-mode .radio input{
+   display: inline-block;
+   margin: 1em 0px;
+ }
+
+ .postbox-container  #meta_box_options #visualization-mode .radio p{
+   margin-left: 5px;
+ }
