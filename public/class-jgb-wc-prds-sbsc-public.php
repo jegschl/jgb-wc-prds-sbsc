@@ -133,20 +133,7 @@ class Jgb_Wc_Prds_Sbsc_Public {
 				false 
 			);
 
-			$js_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js';
-			$js_script_fl_jcplg_path = plugin_dir_path( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js';
-			$tversion = filemtime($js_script_fl_jcplg_path);
-			wp_enqueue_script( 
-				$this->plugin_name, 
-				plugin_dir_url( __FILE__ ) . 'js/jgb-wc-prds-sbsc-public.js', 
-				array( 
-					'jquery',
-					'swiper-bundle',
-					'jgb-ir-select-color'
-				), 
-				$tversion,
-				false 
-			);
+			
 
 		}
 	}
