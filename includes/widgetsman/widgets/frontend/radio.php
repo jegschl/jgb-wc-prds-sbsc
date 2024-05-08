@@ -5,7 +5,12 @@ $label_field =  $wg->get_label();
 $options = $wg->get_options();
 ?>
 
-<table class="variations field" data-jgbsbsc-field-type="radio" cellspacing="0">
+<table 
+    class="variations field" 
+    data-jgbsbsc-field-type="radio" 
+    cellspacing="0" 
+    data-field-id="<?= $wg->get_id() ?>"
+>
     <tbody>
         <tr>
         <td colspan="2" class="label"><?= $label_field ?> </td>
@@ -18,7 +23,7 @@ $options = $wg->get_options();
         <tr>
             <td class="value">
                 <div class="wrapper">
-                    <label for="premium-glass"><?= $opt['label'] ?></label>
+                    <label for="id-value-<?= $opt['slug']?>"><?= $opt['label'] ?></label>
                     <input type="radio" name="<?= $opt['slug'] ?>" value="<?= $opt['value'] ?>" id="id-value-<?= $opt['slug']?>"/>
                     <?php if( isset( $opt['value_type'] ) && $opt['value_type'] != 'simple' ) {
                         ?>
