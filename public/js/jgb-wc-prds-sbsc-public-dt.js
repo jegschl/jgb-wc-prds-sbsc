@@ -38,7 +38,7 @@ function initializeDb(){
 	dtItemsData 			= TAFFY( JGB_WPSBSC_DATA['dtDataBase']['items_data']  );
 	dtItemsField 			= TAFFY( JGB_WPSBSC_DATA['dtDataBase']['items_field']  );
 
-	maxStepIndex  = dtFields().max('step_index');
+	maxStepIndex  = dtFields().max('priority_in_step');
 }
 
 function loadFeatures(){
@@ -107,7 +107,7 @@ function thereIsValidFieldsInCurrentStep( step ){
 	let camposEnElStep = [];
 	let opcionesSeleccionables = [];
 	let opcionesValidasSeleccionables = [];
-	dtFields( { step_index:step.toString() } ).each( (record)=>{
+	dtFields( { priority_in_step:step.toString() } ).each( (record)=>{
 
 		//fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
 		camposEnElStep.push( { 'id': record['id'], 'slug': record['slug'] } );
@@ -168,18 +168,6 @@ function thereIsValidFieldsInCurrentStep( step ){
 
 function renderStep( step ){
 
-	let i;
-
-	if( step > 0 ){
-
-		for(i = step; i <= maxStepIndex; i++){
-
-			swiper.removeSlide(i);
-
-		}
-
-	}
-
 	let fieldsToRender = [];
 
 	let ts = JGB_WPSBSC_DATA['beginStepWraperTpl'].replace("{{step_index}}",step.toString());
@@ -194,7 +182,7 @@ function renderStep( step ){
 
 	if( step <= maxStepIndex ){
 		
-		dtFields( { step_index:step.toString() } ).each( (record)=>{
+		dtFields( { priority_in_step:step.toString() } ).each( (record)=>{
 
 			fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
 
@@ -303,7 +291,19 @@ function renderFirstStep(){
 }
 
 function renderNextStep(){
-	const actSldr = swiper.activeIndex;
+	const actSldr = swiper.activeIndex + 1;
+
+	let i = actSldr + 1;
+
+	
+
+	for(i = step; i <= maxStepIndex; i++){
+
+		swiper.removeSlide(i);
+
+	}
+
+	
 	renderStep( actSldr + 1 );
 }
 
