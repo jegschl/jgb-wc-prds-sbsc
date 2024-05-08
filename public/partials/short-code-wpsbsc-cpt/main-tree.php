@@ -24,43 +24,23 @@
 		<div class="swiper">
 			<!-- Additional required wrapper -->
 			<div class="swiper-wrapper">
-				<?php foreach( $steps as $step_index => $step ){ ?>
-				<!-- Slides -->
-				<div class="swiper-slide">
-					<div class="step step-<?= $step_index ?>">
-						<div class="title"></div>
-						
-						<div class="content">
 							
-						<!-- contenido -->
-						<?php do_action('JGB/WPSBSC/render_fields', $step['fields'] ); ?>
+				
 
-						</div>
-
-						<div class="nav-buttons">
-							<?php if( $step_index > 0) { ?>
-							<div class="forward">Volver</div>
-							<?php } ?>
-							<?php if( $step_index < count( $steps ) - 1 ){ ?>
-							<div class="next">Siguiente</div>
-							<?php } ?>
-						</div>
-					</div>
-				</div>
-				
-				<?php } ?>
-				
-				
 			</div>
 			<!-- If we need pagination -->
 			<div class="swiper-pagination"></div>
 
-			<!-- If we need navigation buttons -->
-			<!-- <div class="swiper-button-prev"></div>
-			<div class="swiper-button-next"></div> -->
+			
 
-			<!-- If we need scrollbar -->
-			<!-- <div class="swiper-scrollbar"></div> -->
+		</div>
+
+		<div class="nav-buttons">
+							
+			<div class="forward">Volver</div>
+
+			<div class="next">Siguiente</div>
+			
 		</div>
 	</div>
 	<div class="right-container">
