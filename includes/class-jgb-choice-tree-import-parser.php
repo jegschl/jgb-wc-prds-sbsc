@@ -243,6 +243,7 @@ class JGBWPSChoiceTreeImportParser{
     function process_dt_col_fld_lbl( $currentData, $data, $subParameter, $soc, $ctip ){
         $currentData['label'] = trim($data);
         $currentData['slug'] = sanitize_title( trim( $data ) );
+        $currentData['step_index'] = $soc;
         return $currentData;
     }
 
@@ -598,9 +599,10 @@ class JGBWPSChoiceTreeImportParser{
         $pfx = $wpdb->prefix;
 
         $data = [
-            'post_id' => $postId,
-            'slug'    => $fld['slug'],
-            'name'    => $fld['label']
+            'post_id'       => $postId,
+            'slug'          => $fld['slug'],
+            'name'          => $fld['label'],
+            'step_index'    => $fld['step_index']
         ];
 
         $format = ['%d','%s','%s'];
