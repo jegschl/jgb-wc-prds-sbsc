@@ -141,13 +141,13 @@
     justify-content: start;
 }
 
-.swiper-slide .step .nav-buttons{
+.left-container .nav-buttons{
     display: flex;
     justify-content: space-between;
     padding: 20px 10px;
 }
 
-.swiper-slide .step .nav-buttons .next,.swiper-slide .step .nav-buttons .forward, .nav-buttons .add-crystal-to-cart {
+.left-container .nav-buttons .next,.left-container .nav-buttons .forward, .nav-buttons .add-crystal-to-cart {
     padding: 10px 15px;
     border-radius: 0px;
     color: white;
@@ -157,7 +157,7 @@
     /* font-weight: 600; */
 }
 
-.swiper-slide .step .nav-buttons .next:hover,.swiper-slide .step .nav-buttons .forward:hover,.nav-buttons .add-crystal-to-cart:hover{
+.left-container .nav-buttons .next:hover,.left-container .nav-buttons .forward:hover,.nav-buttons .add-crystal-to-cart:hover{
     color: white;
     background-color: #ff3535;
 }
