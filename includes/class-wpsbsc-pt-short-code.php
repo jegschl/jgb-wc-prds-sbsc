@@ -239,11 +239,11 @@ class SBSCDefPTShortCode{
 
         $r = [];
         foreach( $steps as $step ){
-            $r[ $step['steps'] ] = "Paso " . $step['steps'];
+            $r[ $step['steps'] ] = "Paso " . ($step['steps']+1);
         }
 
         return apply_filters('JGB/WPSBSC/step_titles', $r, $post_id );
-        
+
     }
 
     function enqueue_scripts( &$atts ){
