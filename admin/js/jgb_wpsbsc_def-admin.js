@@ -31,7 +31,11 @@ function getUrlParameter(sParam) {
 
         //const jsonEdtrPostSelectr = 'input[name="' + JGB_WPSBSC_CPT_DEF_DATA.jsonEdtrSelectr + '"]';
 
-        const originalData = JGB_WPSBSC_CPT_DEF_DATA.main_content_json;
+        let originalData = "{}";
+
+        if( JGB_WPSBSC_CPT_DEF_DATA.main_content_json != '' ){
+            originalData = JGB_WPSBSC_CPT_DEF_DATA.main_content_json;
+        }
 
         const container = $('#' + JGB_WPSBSC_CPT_DEF_DATA.jsonEdtrSelectr);
 
