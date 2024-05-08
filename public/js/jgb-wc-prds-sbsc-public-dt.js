@@ -101,6 +101,71 @@ function removeValuesWithoutParent( step ){
 	}
 }
 
+function thereIsValidFieldsInCurrentStep( step ){
+
+	/* obtener los ids de campos correspondiente al step. */ 
+	let camposEnElStep = [];
+	let opcionesSeleccionables = [];
+	let opcionesValidasSeleccionables = [];
+	dtFields( { step_index:step.toString() } ).each( (record)=>{
+
+		//fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
+		camposEnElStep.push( { 'id': record['id'], 'slug': record['slug'] } );
+		
+
+	} );
+
+	/* Si no hay ningún campo en el step, retornar false. */
+	if( camposEnElStep.length == 0 ){
+		return false;
+	}
+
+
+	/* recorrer cada campo y verificar, mediante el id del campo, si hay valores 
+	   seleccionables en la tabla de available choices comparando con el campo 
+	   field_id de la tabla available choices. */
+	
+	camposEnElStep.forEach( (record,i)=>{ 
+		
+		dtChoicesAvailables( { field_id: record['id'] } ).each( (record)=>{
+			
+			opcionesSeleccionables.push( 
+				{
+					'valueSlug': record['selectable_value_slug'],
+					'parentFieldId': record['parent_field_id'],
+					'parentValueSlug': record['parent_on_browser_selected_slug_value']
+				}
+			);
+
+		} );
+
+	} );
+
+	if( opcionesSeleccionables.length == 0 ){
+		return false;
+	}
+
+	/* recorrer cada opción seleccionable y verificar si hay un elemento en
+	   selectedFeatures cuyo field sea igual al parentFieldId y su value sea igual
+	   al parentValueSlug. */
+	   opcionesSeleccionables.forEach( ( record )=>{
+		if( ( step == 0 ) && ( ( record['parentFieldId'] == null || record['parentValueSlug'] == null ) ) ){
+			opcionesValidasSeleccionables.push( record );
+		} else {
+			if( getFeatureValue( getFieldSlugById( record['parentFieldId'] ) ) == record['parentValueSlug'] ){
+				opcionesValidasSeleccionables.push( record );
+			}
+		}
+
+	} );
+	
+	if( opcionesValidasSeleccionables.length == 0 ){
+		return false;
+	}
+
+	return true;
+}
+
 function renderStep( step ){
 
 	let i;
@@ -123,12 +188,22 @@ function renderStep( step ){
 
 	fieldsToRender.push( ts );
 
-	dtFields( { step_index:step.toString() } ).each( (record)=>{
+	while( !thereIsValidFieldsInCurrentStep( step ) && step <= maxStepIndex ){
+		step++;
+	}
 
-		fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
+	if( step <= maxStepIndex ){
+		
+		dtFields( { step_index:step.toString() } ).each( (record)=>{
 
-	} );
+			fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
 
+		} );
+
+	}
+
+	
+	
 	fieldsToRender.push( JGB_WPSBSC_DATA['endStepWraperTpl'] );
 
 	swiper.appendSlide( fieldsToRender.join('') );
@@ -136,6 +211,10 @@ function renderStep( step ){
 	removeValuesWithoutParent( step );
 
 	setEventHandlersForAvailablesValuesChoicesSelectors();
+
+	
+ 
+	
 
 }
 
@@ -229,7 +308,8 @@ function renderNextStep(){
 }
 
 function getFieldSlugById( id ){
-	return dtFields({id:id}).first().slug;
+	const s = dtFields({id:id.toString() }).first().slug;
+	return s;
 }
 
 function setFeatureValue( fieldSlug, value ){
