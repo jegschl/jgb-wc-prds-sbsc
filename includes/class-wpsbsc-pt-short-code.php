@@ -179,6 +179,12 @@ class SBSCDefPTShortCode{
             
     }
 
+    private function get_selectable_field_types(){
+        return [
+            'radio',
+            'select'];
+    }
+
     public function get_fields_html_templates( $post_id ){
         
         $r = [];
@@ -187,12 +193,26 @@ class SBSCDefPTShortCode{
 
         foreach( $fields as $fld ){
             $slug = $fld['slug'];
+            $tpls = [];
+
 
             ob_start();
 
-            $this->render_fields( [$fld] );
+            $this->render_fields_wrapper_template( [$fld] );
 
-            $r[$slug] = ob_get_clean();
+            $tpls['wrapper'] = ob_get_clean();
+
+            if( in_array( $fld['type'], $this->get_selectable_field_types() ) ){
+
+                ob_start();
+
+                $this->render_fields_options_template( $fld['options'] );
+
+                $tpls['options'] = ob_get_clean();
+
+            }
+
+            $r[$slug] = $tpls;
         }
 
         return $r;
@@ -232,7 +252,7 @@ class SBSCDefPTShortCode{
 
         $pfx = $wpdb->prefix;
 
-        $s  = "SELECT DISTINCT step_index as steps FROM {$pfx}jgb_wpsbsc_fields ";
+        $s  = "SELECT DISTINCT priority_in_step as steps FROM {$pfx}jgb_wpsbsc_fields ";
         $s .= "WHERE post_id = %d ";
 
         $steps = $wpdb->get_results( $wpdb->prepare( $s, $post_id ), ARRAY_A );
@@ -379,12 +399,23 @@ class SBSCDefPTShortCode{
         return $output;
     }
 
-    public function render_fields( $fields ){
+    public function render_fields_wrapper_template( $fields ){
         $wf = new \JGB\WidgetsFactory();
-
+        $r = [];
         foreach( $fields as $k => $fld ){
             $widget = $wf->create_widget( $fld['type'],$fld);
-            $widget->render_frontend();
+            $r[ $fld['slug'] ] = $widget->get_field_wrapper_template();
+        }
+
+        return $r;
+    }
+
+    public function render_fields_options_template( $fields ){
+        $wf = new \JGB\WidgetsFactory();
+        $otpls = [];
+        foreach( $fields as $k => $fld ){
+            $widget = $wf->create_widget( $fld['type'],$fld);
+            $otpls[ $fld['slug'] ] = $widget->get_field_options_template();
         }
     }
 }

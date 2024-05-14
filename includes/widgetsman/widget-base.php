@@ -13,6 +13,8 @@ class FormWidgetBase{
 
     protected $frontend_template_path;
 
+    protected $field_wrapper_template_path;
+
     protected $creation_passed_params;
 
     protected $id;
@@ -180,8 +182,59 @@ class FormWidgetBase{
         }
     }
 
+    protected function get_field_wrapper_template(){
+        $this->set_field_wrapper_tpl_path();
+
+        if( file_exists( $this->field_wrapper_template_path ) ){
+            ob_start();
+            \load_template( $this->field_wrapper_template_path, false, ['widget' => $this ] );
+            return ob_get_clean();
+        }
+
+        return '';
+    }
+
+    protected function get_tpl_subdir(){
+        return  apply_filters('JGB/wpsbsc/getSubdirTemplate','/JGB/wpsbsc/widgets/frontend',$this->type,$this->name);
+    }
+
+    protected function set_field_wrapper_tpl_path(){
+        $subdir = $this->get_tpl_subdir();
+        $filenm = $filenm = $this->type . '-wrapper.php';
+
+        $ptt  = get_stylesheet_directory();
+        $ptt .= $subdir . '/';
+        $ptt .= $filenm;
+
+        if( file_exists( $ptt ) ){
+            $this->field_wrapper_template_path = apply_filters('JGB/wpsbsc/setFieldWrapperTemplate',$ptt,$this->type,$this->name);
+            return;
+        }
+
+        $ptt  = get_template_directory();
+        $ptt .= $subdir . '/';
+        $ptt .= $filenm;
+
+        if( file_exists( $ptt ) ){
+            $this->field_wrapper_template_path = apply_filters('JGB/wpsbsc/setFieldWrapperTemplate',$ptt,$this->type,$this->name);
+            return;
+        }
+
+        $subdir = 'widgets/frontend';
+        $ptt  = trailingslashit( $this->base_path );
+        $ptt .= $subdir . '/';
+        $ptt .= $filenm;
+
+        if( file_exists( $ptt ) ){
+            $this->field_wrapper_template_path = apply_filters('JGB/wpsbsc/setFieldWrapperTemplate',$ptt,$this->type,$this->name);
+            return;
+        }
+
+        $this->field_wrapper_template_path = '';
+    }
+
     protected function set_frontend_template_path(){
-        $subdir = '/JGB/wpsbsc/widgets/frontend';
+        $subdir = $this->get_tpl_subdir();
         $filenm = $this->type . '.php';
 
         $ptt  = get_stylesheet_directory();
@@ -221,14 +274,61 @@ class FormWidgetBase{
 class FormWidgetWithVisualOptsBase extends FormWidgetBase {
     protected $options;
 
+    protected $field_options_template_path;
+
     function __construct( $params )
     {
         parent::__construct( $params );
 
         $this->options = $params['options'];
+
+        $this->field_options_template_path = [];
     }
 
     public function get_options(){
         return $this->options;
+    }
+
+    private function set_field_options_tpl_path(){
+        $subdir = $this->get_tpl_subdir();
+        $filenm = $this->type . '-option.php';
+
+        foreach( $this->options as $k => $opt){
+            $optslg = $opt['slug'];
+            $ptt  = get_stylesheet_directory();
+            $ptt .= $subdir . '/';
+            $ptt .= $filenm;
+
+            if( file_exists( $ptt ) ){
+                $this->field_options_template_path[$optslg] = apply_filters('JGB/wpsbsc/setFieldOptionTemplate',$ptt, $optslg, $this);
+                continue;
+            }
+
+            $ptt  = get_template_directory();
+            $ptt .= $subdir . '/';
+            $ptt .= $filenm;
+
+            if( file_exists( $ptt ) ){
+                $this->field_options_template_path[$optslg] = apply_filters('JGB/wpsbsc/setFieldOptionTemplate',$ptt, $optslg, $this);
+                continue;
+            }
+
+            $subdir = 'widgets/frontend';
+            $ptt  = trailingslashit( $this->base_path );
+            $ptt .= $subdir . '/';
+            $ptt .= $filenm;
+
+            if( file_exists( $ptt ) ){
+                $this->field_options_template_path[$optslg] = apply_filters('JGB/wpsbsc/setFieldOptionTemplate',$ptt, $optslg, $this);
+                continue;
+            }
+
+            $this->field_options_template_path[$optslg] = '';
+        }
+    }
+
+    public function get_field_options_template(){
+        $this->set_field_options_tpl_path();
+        return $this->field_options_template_path;
     }
 }
