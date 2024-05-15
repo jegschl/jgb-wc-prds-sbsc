@@ -3,7 +3,7 @@ let selector = '#pum-22562';
 let selectedFeatures = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
-
+let stepPriorityCheks = [];
 
 const preAdditionalFieldsStepIndex = 2;
 const cartFormSltr = "form.cart";
@@ -166,7 +166,7 @@ function thereIsValidFieldsInCurrentStep( step ){
 	return true;
 }
 
-function renderStep( step ){
+function renderStep( fieldId, valueSelected ){
 
 	let fieldsToRender = [];
 
@@ -180,11 +180,15 @@ function renderStep( step ){
 		step++;
 	}
 
-	if( step <= maxStepIndex ){
+	if( (step <= maxStepIndex ) && ( ! stepPriorityCheks.includes( step.toString() ) ) ){
 		
 		dtFields( { priority_in_step:step.toString() } ).each( (record)=>{
 
 			fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
+
+			if( ! stepPriorityCheks.includes( step.toString() ) ){
+				stepPriorityCheks.push( record['priority_in_step'] );
+			}
 
 		} );
 
@@ -200,10 +204,31 @@ function renderStep( step ){
 
 	setEventHandlersForAvailablesValuesChoicesSelectors();
 
-	
- 
-	
+}
 
+function renderFirstStep(){
+
+	removeSlidesFrom( 0 );
+
+	renderStep(0);
+
+}
+
+function renderNextStep( fieldId, valueSelected ){
+
+	const actSldr = swiper.activeIndex + 1;
+
+	removeSlidesFrom( actSldr );
+
+	renderStep( fieldId, valueSelected );
+
+}
+
+function removeSlidesFrom( index ){
+	let i = index;
+	for(i; i <= maxStepIndex; i++){
+		swiper.removeSlide(i);
+	}
 }
 
 function setEventHandlersForAvailablesValuesChoicesSelectors(){
@@ -231,7 +256,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldSlug, valueSelected );
-			renderNextStep();
+			renderNextStep( fieldId, valueSelected );
 		});
 
 		$('.step .value .wrapper .option-buton:not(.outer)').off('click');
@@ -284,27 +309,6 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			}
 		});
 	})( jQuery );
-}
-
-function renderFirstStep(){
-	renderStep(0);
-}
-
-function renderNextStep(){
-	const actSldr = swiper.activeIndex + 1;
-
-	let i = actSldr + 1;
-
-	
-
-	for(i = step; i <= maxStepIndex; i++){
-
-		swiper.removeSlide(i);
-
-	}
-
-	
-	renderStep( actSldr + 1 );
 }
 
 function getFieldSlugById( id ){

@@ -195,20 +195,19 @@ class SBSCDefPTShortCode{
             $slug = $fld['slug'];
             $tpls = [];
 
-
-            ob_start();
-
-            $this->render_fields_wrapper_template( [$fld] );
-
-            $tpls['wrapper'] = ob_get_clean();
+            $tpls['wrapper'] = $this->render_fields_wrapper_template( [$fld] );
 
             if( in_array( $fld['type'], $this->get_selectable_field_types() ) ){
 
-                ob_start();
+                $tp = $this->render_fields_options_template( [ $fld ] );
 
-                $this->render_fields_options_template( $fld['options'] );
+                $tpls['options'] = [];
 
-                $tpls['options'] = ob_get_clean();
+                foreach( $tp as $k => $v ){
+                    ob_start();
+                    \load_template( $v, false, ['option' => $fld['options'][$k] ] );
+                    $tpls['options'][$k] = ob_get_clean();
+                }
 
             }
 
@@ -413,9 +412,13 @@ class SBSCDefPTShortCode{
     public function render_fields_options_template( $fields ){
         $wf = new \JGB\WidgetsFactory();
         $otpls = [];
+        $r = null;
+        
         foreach( $fields as $k => $fld ){
             $widget = $wf->create_widget( $fld['type'],$fld);
-            $otpls[ $fld['slug'] ] = $widget->get_field_options_template();
+            $r = $otpls[ $fld['slug'] ] = $widget->get_field_options_template();
         }
+
+        return $r;
     }
 }

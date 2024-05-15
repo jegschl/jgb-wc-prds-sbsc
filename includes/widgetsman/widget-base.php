@@ -182,7 +182,7 @@ class FormWidgetBase{
         }
     }
 
-    protected function get_field_wrapper_template(){
+    public function get_field_wrapper_template(){
         $this->set_field_wrapper_tpl_path();
 
         if( file_exists( $this->field_wrapper_template_path ) ){
