@@ -244,3 +244,35 @@
     align-items: center;
 }
 
+
+.single-product .bwp-single-info .button-select-crystals{
+    margin-top: 2px;
+    width: 100%;
+}
+.single-product .bwp-single-info .button-select-crystals button {
+    -webkit-transition: none;
+    transition: none;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 64px;
+    position: relative;
+    background: #000;
+    color: #fff;
+    text-align: center;
+    margin-right: 20px;
+    padding: 0 15px;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+    flex: 1;
+    margin: 0;
+    white-space: nowrap;
+    font-family: Jost,sans-serif;
+    width: 100%;
+}
+
+.single-product .bwp-single-info .button-select-crystals button:hover {
+    background: #ff0202;
+    color: #fff;
+}
