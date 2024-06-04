@@ -10,8 +10,8 @@ class SBSCDefPTShortCode{
 
     protected $tplsPaths;
 
-    function __construct( $plugin_path )
-    {
+    function __construct( $plugin_path ){
+        
         $this->plg_path = $plugin_path;
 
         $this->tplsPaths = [];
@@ -24,7 +24,19 @@ class SBSCDefPTShortCode{
 
         add_action('JGB/WPSBSC/render_fields',[$this,'render_fields']);
 
+        add_action( 'woocommerce_after_add_to_cart_button', [ $this, 'render_button_crystal_selection' ], 90 );
+
     }
+
+    public function render_button_crystal_selection() {
+        
+        ?>
+        <div class="button-select-crystals">
+            <button class="popmake-22562 pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
+        </div>
+        <?php
+    }
+    
 
     public function generate_decision_tree_json_database( $post_id ){
         global $wpdb;
