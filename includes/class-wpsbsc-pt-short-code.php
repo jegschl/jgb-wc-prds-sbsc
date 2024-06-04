@@ -204,14 +204,43 @@ class SBSCDefPTShortCode{
                 $tpls['options'] = [];
 
                 foreach( $tp as $k => $v ){
-                    ob_start();
-                    \load_template( $v, false, ['option' => $fld['options'][$k] ] );
-                    $tpls['options'][$k] = ob_get_clean();
+                    
+                    $indexSlugHomolgated = false;
+                    
+                    $fieldOptionKey = 0;
+                    
+                    foreach( $fld['options'] as $optk => $fldOpt ){
+                        
+                        if( $fldOpt['slug'] == $k ){
+                            
+                            $indexSlugHomolgated = true;
+                           
+                            $fieldOptionKey = $optk;
+
+                            break;
+
+                        }
+
+                    }
+
+                    if( $indexSlugHomolgated ){
+
+                        ob_start();
+                       
+                        \load_template( $v, false, ['option' => $fld['options'][$fieldOptionKey] ] );
+                        
+                        $tpls['options'][$k] = ob_get_clean();
+
+                    } else {
+                        $tpls['options'][$k] = '';
+                    }
+                    
                 }
 
             }
 
             $r[$slug] = $tpls;
+
         }
 
         return $r;
@@ -413,7 +442,7 @@ class SBSCDefPTShortCode{
         $wf = new \JGB\WidgetsFactory();
         $otpls = [];
         $r = null;
-        
+
         foreach( $fields as $k => $fld ){
             $widget = $wf->create_widget( $fld['type'],$fld);
             $r = $otpls[ $fld['slug'] ] = $widget->get_field_options_template();

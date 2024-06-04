@@ -64,143 +64,158 @@ function getFeatureValue( fieldSlug ){
 	}
 }
 
-function removeValuesWithoutParent( step ){
-	const hesRadioInputs = '.swiper-slide .step.step-' + step + ' .value .wrapper input[type="radio"]';
-	let trValuesToRemove = [];
+
+function getFieldsPriority(){
+	let r = [];
+	dtFields().order('priority_in_step').each( (record)=>{
+		if( r[ record['priority_in_step'] ] == undefined ){
+			r[ record['priority_in_step'] ] = [];
+		}
+		r[ record['priority_in_step'] ].push( record['slug'] );
+	} );
+	return r;
+}
+
+function get_first_field_to_render(){
+
+	const fieldsPriority = getFieldsPriority();
+
+	const priorities = dtFields().order('priority_in_step').distinct('priority_in_step');
+
+	const options = []; 
 	
-	jQuery(hesRadioInputs).each( (i,e)=>{
-
-		// obtener nombre de campo y slug del valor seleccionable.
-		const fieldId = jQuery(e).closest('table.field').data('field-id');
-		const valueSlug = jQuery(e).val();
-		const fieldSlug = getFieldSlugById( fieldId );
-
-		/* buscar en la tabla de available choices. */
-		dtChoicesAvailables({field_id:fieldId,selectable_value_slug:valueSlug}).each( (record)=>{
-			/*  si el valor seleccionable tiene par campo-valor padre hay que comparar el valor
-				con el subelemento value del elemento en selectedFeatures cuyo subelemento 
-				field sea igual al slug del campo padre indicado en el registro. */
-			let tr;
-			const parentFieldSlug = getFieldSlugById( record['parent_field_id'] );
-			
-			/* Si el valor es diferente entonces hay que buscar el elmento closest('tr')
-	   		   y agregarlo al array trValuesToRemove. */
-			if( getFeatureValue( parentFieldSlug ) != record['parent_on_browser_selected_slug_value'] ){
-				tr = jQuery(e).closest('tr');
-				trValuesToRemove.push( tr );
-			}
-		});
+	dtChoicesAvailables({parent_field_id:null,parent_on_browser_selected_slug_value:null}).each(function(record){
+		
+		const choice = {
+			slug: record['selectable_value_slug'], 
+			label: record['selectable_value_label']
+		}; 
+		
+		options.push( choice );
 
 	});
-
-	/* Recorrer cada elemento en trValuesToRemove y removerlo del DOM. */
-	let j;
-	for( j = 0; j < trValuesToRemove.length; j++ ){
-		trValuesToRemove[j].remove()
-			
-	}
+	
+	const r = [
+		{
+			slug: fieldsPriority[ priorities[0] ],
+			options: options
+		}		
+	];
+	
+	return r;
 }
 
-function thereIsValidFieldsInCurrentStep( step ){
-
-	/* obtener los ids de campos correspondiente al step. */ 
-	let camposEnElStep = [];
-	let opcionesSeleccionables = [];
-	let opcionesValidasSeleccionables = [];
-	dtFields( { priority_in_step:step.toString() } ).each( (record)=>{
-
-		//fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
-		camposEnElStep.push( { 'id': record['id'], 'slug': record['slug'] } );
-		
-
-	} );
-
-	/* Si no hay ningún campo en el step, retornar false. */
-	if( camposEnElStep.length == 0 ){
-		return false;
-	}
-
-
-	/* recorrer cada campo y verificar, mediante el id del campo, si hay valores 
-	   seleccionables en la tabla de available choices comparando con el campo 
-	   field_id de la tabla available choices. */
+function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
 	
-	camposEnElStep.forEach( (record,i)=>{ 
-		
-		dtChoicesAvailables( { field_id: record['id'] } ).each( (record)=>{
-			
-			opcionesSeleccionables.push( 
-				{
-					'valueSlug': record['selectable_value_slug'],
-					'parentFieldId': record['parent_field_id'],
-					'parentValueSlug': record['parent_on_browser_selected_slug_value']
-				}
-			);
+	const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
 
-		} );
-
-	} );
-
-	if( opcionesSeleccionables.length == 0 ){
-		return false;
-	}
-
-	/* recorrer cada opción seleccionable y verificar si hay un elemento en
-	   selectedFeatures cuyo field sea igual al parentFieldId y su value sea igual
-	   al parentValueSlug. */
-	   opcionesSeleccionables.forEach( ( record )=>{
-		if( ( step == 0 ) && ( ( record['parentFieldId'] == null || record['parentValueSlug'] == null ) ) ){
-			opcionesValidasSeleccionables.push( record );
-		} else {
-			if( getFeatureValue( getFieldSlugById( record['parentFieldId'] ) ) == record['parentValueSlug'] ){
-				opcionesValidasSeleccionables.push( record );
-			}
-		}
-
-	} );
-	
-	if( opcionesValidasSeleccionables.length == 0 ){
-		return false;
-	}
-
-	return true;
-}
-
-function renderStep( fieldId, valueSelected ){
+	let r = [];
 
 	let fieldsToRender = [];
 
+	let i = 0;
+	
+	dtChoicesAvailables(q).each(function(record){
+
+		const fieldSlug = getFieldSlugById( record['field_id'] );
+		
+		let fieldOptionsUpdated = false;
+
+		const currentFieldOption = {
+			slug: record['selectable_value_slug'],
+			label: record['selectable_value_label']
+		};
+
+		for( i=0; i<r.length; i++ ){
+
+			if( r[i]['slug'] == fieldSlug ){
+
+				r[i]['options'].push( currentFieldOption );
+
+				fieldOptionsUpdated = true;
+
+				break;
+
+			}
+		}
+
+		if( !fieldOptionsUpdated ){
+
+			r.push({
+				slug: fieldSlug,
+				options: [ currentFieldOption ]
+			});
+
+		}
+
+	});
+
+	for(i=0; i<r.length; i++){
+		if( ( r[i]['options'] != undefined ) && ( r[i]['options'].length > 0 ) ){
+			fieldsToRender.push( r[i] );
+		}
+	}
+
+	return fieldsToRender;
+
+}
+
+function renderStep( parentFfieldId, parentFieldvalueSelected ){
+
+	const step = swiper.activeIndex + 1;
+
+	let fieldsToRender = [];
+
+	let templatesToRender = [];
+
+	if( parentFfieldId == undefined && parentFieldvalueSelected == undefined ){
+		fieldsToRender = get_first_field_to_render();
+	} else {
+		fieldsToRender = get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected );
+	}
+
+	const stepFieldsTobeRendered = {
+		'stepIndex': swiper.activeIndex,
+		'fields': fieldsToRender
+	};
+
+	
+
 	let ts = JGB_WPSBSC_DATA['beginStepWraperTpl'].replace("{{step_index}}",step.toString());
 
-	ts = ts.replace("{{title}}", JGB_WPSBSC_DATA['stepTitles'][step.toString()] );
+	ts = ts.replace("{{title}}", JGB_WPSBSC_DATA['stepTitles'][(step-1).toString()] );
 
-	fieldsToRender.push( ts );
+	templatesToRender.push( ts );
 
-	while( !thereIsValidFieldsInCurrentStep( step ) && step <= maxStepIndex ){
-		step++;
-	}
+	
+	fieldsToRender.forEach( ( fld )=>{
+		let fieldSlug = null;
+		if( typeof fld['slug'] == 'string' ){
+			fieldSlug = fld['slug'];
+		} else {
+			fieldSlug = fld['slug'][0];
+		}
 
-	if( (step <= maxStepIndex ) && ( ! stepPriorityCheks.includes( step.toString() ) ) ){
+		const fieldOptions = fld['options'];
+
+		let optionsHRd = '';
+
+		// unir todas las opciones disponibles en un solo string.
+		fieldOptions.forEach( (opt,i)=>{
+			optionsHRd += i>0 ? "\n" : '';
+			optionsHRd += JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['options'][ opt['slug'] ];
+		});
+
+		const fieldWrapperTpl = JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['wrapper'][ fieldSlug ].replace("{{#radio-options}}", optionsHRd );
+
+		templatesToRender.push( fieldWrapperTpl );
+
+	});
+	
 		
-		dtFields( { priority_in_step:step.toString() } ).each( (record)=>{
+	templatesToRender.push( JGB_WPSBSC_DATA['endStepWraperTpl'] );
 
-			fieldsToRender.push( JGB_WPSBSC_DATA['fieldsTemplates'][ record['slug'] ] );
-
-			if( ! stepPriorityCheks.includes( step.toString() ) ){
-				stepPriorityCheks.push( record['priority_in_step'] );
-			}
-
-		} );
-
-	}
-
-	
-	
-	fieldsToRender.push( JGB_WPSBSC_DATA['endStepWraperTpl'] );
-
-	swiper.appendSlide( fieldsToRender.join('') );
-
-	removeValuesWithoutParent( step );
+	swiper.appendSlide( templatesToRender.join("\n") );
 
 	setEventHandlersForAvailablesValuesChoicesSelectors();
 
@@ -210,7 +225,7 @@ function renderFirstStep(){
 
 	removeSlidesFrom( 0 );
 
-	renderStep(0);
+	renderStep();
 
 }
 
