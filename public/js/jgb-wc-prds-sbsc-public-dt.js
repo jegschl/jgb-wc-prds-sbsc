@@ -162,7 +162,15 @@ function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
 
 function renderStep( parentFfieldId, parentFieldvalueSelected ){
 
-	const step = swiper.activeIndex + 1;
+	let incrmtr;
+
+	if( parentFfieldId == undefined && parentFieldvalueSelected == undefined ){
+		incrmtr = 1;
+	} else {
+		incrmtr = 2;
+	}
+
+	const step = swiper.activeIndex + incrmtr;
 
 	let fieldsToRender = [];
 
@@ -223,7 +231,7 @@ function renderStep( parentFfieldId, parentFieldvalueSelected ){
 
 function renderFirstStep(){
 
-	removeSlidesFrom( 0 );
+	swiper.removeAllSlides();
 
 	renderStep();
 
@@ -240,8 +248,8 @@ function renderNextStep( fieldId, valueSelected ){
 }
 
 function removeSlidesFrom( index ){
-	let i = index;
-	for(i; i <= maxStepIndex; i++){
+	let i = maxStepIndex;
+	for(i; i >= index; i--){
 		swiper.removeSlide(i);
 	}
 }

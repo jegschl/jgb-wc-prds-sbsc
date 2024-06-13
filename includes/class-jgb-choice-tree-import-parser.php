@@ -275,7 +275,19 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function checkValues($v,$k){
-        return $this->currentValueSlugInVTM == sanitize_title( $v['slug'] );
+        if( $this->currentValueSlugInVTM != sanitize_title( $v['slug'] ) ){
+            return false;
+        }
+
+        if( $v['parent']['value_slug'] != $this->previousValueSlugRoSNotMultiple ){
+            return false;
+        }
+
+        if( $v['parent']['field_slug'] != $this->previousFieldSlugRoSNotMultiple ){
+            return false;
+        }
+
+        return true;
     }
 
     function process_dt_col_fld_mvals( $currentData, $data, $subParameter, $soc, $ctip ){
@@ -481,7 +493,7 @@ class JGBWPSChoiceTreeImportParser{
            esto tenemos todos la lista de registros de IDs de choices_availables que
            se deben eliminar. */
 
-        $q  = "SELEC id FROM {$pfx}jgb_wpsbsc_choices_availables ";
+        $q  = "SELECT id FROM {$pfx}jgb_wpsbsc_choices_availables ";
         $q .= "WHERE post_id = {$this->postId}";
 
         $choices_availables_ids = $wpdb->get_col( $q );
