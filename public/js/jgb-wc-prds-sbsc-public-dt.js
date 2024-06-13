@@ -280,6 +280,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldSlug, valueSelected );
 			renderNextStep( fieldId, valueSelected );
+			checkButtonsNavigationStatus();
 		});
 
 		$('.step .value .wrapper .option-buton:not(.outer)').off('click');
@@ -351,16 +352,25 @@ function setFeatureValue( fieldSlug, value ){
 
 
 function checkButtonsNavigationStatus(){
-	
-	if( swiper.activeIndex < 1 ){
-		if(	!$('.left-container .nav-buttons .forward').hasClass('hidden') ){
-			$('.left-container .nav-buttons .forward').addClass('hidden');
+	(function( $ ) {
+		'use strict';
+		const btnForward = $('.left-container .nav-buttons .forward');
+		const btnNext = $('.left-container .nav-buttons .next');
+		
+		if( swiper.isBeginning ){
+			btnForward.removeClass('hidden').addClass('hidden');
+			
+		} else {
+			btnForward.removeClass('hidden');
 		}
-	} else {
-		if(	$('.left-container .nav-buttons .forward').hasClass('hidden') ){
-			$('.left-container .nav-buttons .forward').removeClass('hidden');
+
+		if( swiper.isEnd ){
+			btnNext.removeClass('hidden').addClass('hidden');
+		} else {
+			btnNext.removeClass('hidden');
 		}
-	}
+		
+	})( jQuery );
 		
 }
 
@@ -486,28 +496,27 @@ function cpFirstMatch(){
 
 		const speed = 500;
 		swiper = new Swiper('#pum-22562 .swiper', {
-		// Optional parameters
-		direction: 'horizontal',
-		loop: false,
+			// Optional parameters
+			direction: 'horizontal',
+			loop: false,
 
-		// If we need pagination
-		pagination: {
-			el: '.swiper-pagination',
-		},
+			// If we need pagination
+			pagination: {
+				el: '.swiper-pagination',
+			},
 
-		// Navigation arrows
-		navigation: {
-			nextEl: '.swiper-button-next',
-			prevEl: '.swiper-button-prev',
-		},
+			// And if we need scrollbar
+			scrollbar: {
+				el: '.swiper-scrollbar',
+			},
 
-		// And if we need scrollbar
-		scrollbar: {
-			el: '.swiper-scrollbar',
-		},
+			autoHeight: false,
 
-		autoHeight: false
+			//slideChangeTransitionEnd: checkButtonsNavigationStatus
+			//slideChange: checkButtonsNavigationStatus
 		});
+
+		swiper.on('slideChange',checkButtonsNavigationStatus);
 
 		swiper.on('slidePrevTransitionEnd',function(){
 			const actSldr = swiper.activeIndex;
@@ -538,7 +547,7 @@ function cpFirstMatch(){
 
 		setEventHandlersForSelectedFeaturesRadios();
 
-	
+		checkButtonsNavigationStatus();
 
 		$('img.spg').attr('src',$('.wp-post-image').attr('src'));
 
