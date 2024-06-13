@@ -255,6 +255,49 @@ function removeSlidesFrom( index ){
 	}
 }
 
+function desplegarSFs(){
+	(function( $ ) {
+		const sfcSlctr = ".selected-features-container";
+		let html = '<table><tbody>';
+
+		$(selectedFeatures).each(function(i,e){
+			//console.log('Valor de ' + e.label + ': ' + e.value + '.');
+			if( e.value != null ){
+				html += '<tr><td>'+ e.label + ':</td><td>' + e.valueLabel + '</td></tr>';
+			}
+		});
+
+		html += '</tbody></table>';
+		$(sfcSlctr).html(html);
+
+	})( jQuery );
+}
+
+function desplegarPrice(){
+	(function( $ ) {
+
+		const sfcSlctr = ".main-container .price-container";
+		
+		let price = null;
+		let intf = null;
+		let i;
+		let cp;
+		
+		[cp,i] = cpFirstMatch();
+
+		if( cp != null){ price = cp['price']; }
+
+		if( price != null ){
+			intf = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
+			$(sfcSlctr).text( intf.format(price) );
+			$(cartFormSltr + ' input[name="precio"]').val( price );
+		} else {
+			$(sfcSlctr).text('');
+		}
+
+	})( jQuery );
+}
+
 function setEventHandlersForAvailablesValuesChoicesSelectors(){
 
 	(function( $ ) {
@@ -267,6 +310,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			const fieldId = $(fatherFieldEl).data('field-id');
 			const fieldSlug = getFieldSlugById( fieldId );
 			const valueSelected = $(fatherEl).find('input[type="radio"]').val();
+			const valueLabel = $(fatherEl).find('label').text();
 
 			if( (fatherEl.length!=undefined) && fatherEl.length > 0 ){
 				$(fatherEl).find('input[type="radio"]').prop('checked', true);
@@ -279,7 +323,9 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			}
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
-			setFeatureValue( fieldSlug, valueSelected );
+			setFeatureValue( fieldSlug, valueSelected, valueLabel );
+			desplegarSFs();
+			desplegarPrice();
 			renderNextStep( fieldId, valueSelected );
 			//checkButtonsNavigationStatus();
 			swiper.slideNext(speed);
@@ -342,11 +388,12 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldSlug, value ){
+function setFeatureValue( fieldSlug, valueSlug, valueLabel ){
 	let i;
 	for(i=0; i<selectedFeatures.length; i++){
 		if( selectedFeatures[i].field == fieldSlug ){
-			selectedFeatures[i].value = value;
+			selectedFeatures[i].value = valueSlug;
+			selectedFeatures[i].valueLabel = valueLabel;
 		}
 	}
 }
@@ -442,21 +489,6 @@ function cpFirstMatch(){
 	
 	}
 
-	function desplegarSFs(){
-		const sfcSlctr = ".selected-features-container";
-		let html = '<table><tbody>';
-
-		$(selectedFeatures).each(function(i,e){
-			//console.log('Valor de ' + e.label + ': ' + e.value + '.');
-			if( e.value != null ){
-				html += '<tr><td>'+ e.label + ':</td><td>' + e.value + '</td></tr>';
-			}
-		});
-
-		html += '</tbody></table>';
-		$(sfcSlctr).html(html);
-	}
-
 	
 
 	function checkAdditionalFields(){
@@ -470,27 +502,6 @@ function cpFirstMatch(){
 			/* renderizar nuevos campos adicionales */
 
 			
-		}
-	}
-
-	function desplegarPrice(){
-		const sfcSlctr = ".main-container .price-container";
-		
-		let price = null;
-		let intf = null;
-		let i;
-		let cp;
-		
-		[cp,i] = cpFirstMatch();
-
-		if( cp != null){ price = cp['price']; }
-
-		if( price != null ){
-			intf = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
-			$(sfcSlctr).text( intf.format(price) );
-			$(cartFormSltr + ' input[name="precio"]').val( price );
-		} else {
-			$(sfcSlctr).text('');
 		}
 	}
 
@@ -521,24 +532,7 @@ function cpFirstMatch(){
 		swiper.on('slideChange',checkButtonsNavigationStatus);
 
 		swiper.on('slidePrevTransitionEnd',function(){
-			const actSldr = swiper.activeIndex;
-			let radio;
-			switch(actSldr){
-				case 0:
-					radio = $(selectedFeatures[1].vlSltr + ':checked');
-					$(radio).prop('checked', false);
-					selectedFeatures[1].value = null;
-					break;
-
-				case 1:
-					radio = $(selectedFeatures[2].vlSltr + ':checked');
-					$(radio).prop('checked', false);
-					selectedFeatures[2].value = null;
-					break;
-
-			}
-			desplegarSFs();
-			desplegarPrice();
+			
 		});
 
 
