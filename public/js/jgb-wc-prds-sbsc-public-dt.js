@@ -5,6 +5,7 @@ let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
 let stepPriorityCheks = [];
 
+const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
 const cartFormSltr = "form.cart";
 const crystalsPrices = [];
@@ -280,7 +281,8 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldSlug, valueSelected );
 			renderNextStep( fieldId, valueSelected );
-			checkButtonsNavigationStatus();
+			//checkButtonsNavigationStatus();
+			swiper.slideNext(speed);
 		});
 
 		$('.step .value .wrapper .option-buton:not(.outer)').off('click');
@@ -494,7 +496,7 @@ function cpFirstMatch(){
 
 	$(document).on( 'pumBeforeOpen', selector, function(evnt){
 
-		const speed = 500;
+		
 		swiper = new Swiper('#pum-22562 .swiper', {
 			// Optional parameters
 			direction: 'horizontal',
@@ -537,7 +539,6 @@ function cpFirstMatch(){
 			}
 			desplegarSFs();
 			desplegarPrice();
-			console.log('Slider activo: ' + actSldr + '.');
 		});
 
 
