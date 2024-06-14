@@ -8,7 +8,7 @@ $k   = $args['key'];
 
 
         <tr>
-            <td class="value">
+            <td class="value" data-reg-val-id="<?= $opt['id'] ?>">
                 <div class="wrapper">
                     <label for="id-value-<?= $opt['slug']?>"><?= $opt['label'] ?></label>
                     <input type="radio" name="<?= $opt['slug'] ?>" value="<?= $opt['value'] ?>" id="id-value-<?= $opt['slug']?>"/>

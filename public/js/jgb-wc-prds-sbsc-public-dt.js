@@ -8,7 +8,6 @@ let stepPriorityCheks = [];
 const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
 const cartFormSltr = "form.cart";
-const crystalsPrices = [];
 
 
 TAFFY.extend('max', function (column) {
@@ -44,12 +43,13 @@ function initializeDb(){
 
 function loadFeatures(){
 	selectedFeatures = [];
-	dtFields().each( (record)=>{
+	dtFields().order("priority_in_step asec, id asec").each( (record)=>{
 		const feature = {
 			'field': record["slug"],
 			'label': record["name"],
 			'vlSltr': "input[name='" + record["slug"] + "']",
-			'value': null
+			'value': null,
+			'valueLabel': null
 		};
 		selectedFeatures.push(feature);
 	});
@@ -273,6 +273,17 @@ function desplegarSFs(){
 	})( jQuery );
 }
 
+function getItmFromVcsIemsMatchsBySlug( vcims, slug ){
+	let i;
+	for(i=0; i<vcims.length; i++){
+		if( vcims[i].slug == slug ){
+			return vcims[i];
+		}
+	}
+	return null;
+
+}
+
 function desplegarPrice(){
 	(function( $ ) {
 
@@ -280,12 +291,17 @@ function desplegarPrice(){
 		
 		let price = null;
 		let intf = null;
-		let i;
 		let cp;
+		let priceItem;
 		
-		[cp,i] = cpFirstMatch();
+		[cp,i] = cpMatchs();
 
-		if( cp != null){ price = cp['price']; }
+		if( cp != null){ 
+			priceItem = getItmFromVcsIemsMatchsBySlug( cp, 'precio-venta' );
+			if( priceItem != null ){
+				price = priceItem['data'];
+			}
+		}
 
 		if( price != null ){
 			intf = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
@@ -311,6 +327,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			const fieldSlug = getFieldSlugById( fieldId );
 			const valueSelected = $(fatherEl).find('input[type="radio"]').val();
 			const valueLabel = $(fatherEl).find('label').text();
+			const valueRegId = $(fatherEl).closest('td.value').data('reg-val-id');
 
 			if( (fatherEl.length!=undefined) && fatherEl.length > 0 ){
 				$(fatherEl).find('input[type="radio"]').prop('checked', true);
@@ -323,7 +340,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			}
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
-			setFeatureValue( fieldSlug, valueSelected, valueLabel );
+			setFeatureValue( fieldSlug, valueSelected, valueLabel, valueRegId );
 			desplegarSFs();
 			desplegarPrice();
 			renderNextStep( fieldId, valueSelected );
@@ -388,13 +405,23 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldSlug, valueSlug, valueLabel ){
+function setFeatureValue( fieldSlug, valueSlug, valueLabel, valueRegId ){
 	let i;
+	let removeFrom = -1;
 	for(i=0; i<selectedFeatures.length; i++){
 		if( selectedFeatures[i].field == fieldSlug ){
 			selectedFeatures[i].value = valueSlug;
 			selectedFeatures[i].valueLabel = valueLabel;
+			selectedFeatures[i].valueRegId = valueRegId;
+			removeFrom = i;
 		}
+
+		if( ( removeFrom != -1 ) && ( i > removeFrom ) ){
+			selectedFeatures[i].value = null;
+			selectedFeatures[i].valueLabel = null;
+			selectedFeatures[i].valueRegId = null;
+		}
+
 	}
 }
 
@@ -423,48 +450,74 @@ function checkButtonsNavigationStatus(){
 		
 }
 
+function getValueFromVCSItem( VCSItem ){
+	if( VCSItem['item_type'] == 'DATA' ){
+		return dtItemsData({id:VCSItem['id_item']}).first()['value'];
+	}
+	return null;
+}
 
+function getFieldFromVCSItem( VCSItem ){
+	if( VCSItem['item_type'] == 'FIELD' ){
+		const r = dtItemsField({id:VCSItem['id_item']}).first();
+		return { type: r['type'], options: r['options'] };
+	}
+	return null;
+}
 
-function cpFirstMatch(){
-	const ftrdCombsVls = {
-		'receta':null,
-		'tipo-de-lente':null,
-		'material-lente':null,
-		'tratamiento-cristal':null
-	};
+function cpMatchs(){
+	let ftrdCombsVls = [];
 	let i = 0;
+	let vlsIdsCmbnsStr;
+	let r;
+	let choiceCmbntId;
+	let itemsData = [];
+	let curItem = {};
 
 	selectedFeatures.forEach(function(e){
-		//console.log('Valor de ' + e.label + ': ' + e.value + '.');
-		ftrdCombsVls[e.field] = e.value;
+		if( e.valueRegId != null ){
+			ftrdCombsVls.push(e.valueRegId);
+		}
 	});
 
-	if( ftrdCombsVls['receta'] == null ){
-		return  [null, null];
-	}
+	vlsIdsCmbnsStr = ftrdCombsVls.join(':');
 
-	if( ftrdCombsVls['tipo-de-lente'] == null ){
-		return [null, null];
-	}
+	r = dtChoicesCombinations({vls_ids_combinations_string:vlsIdsCmbnsStr}).first();
 
-	if( ftrdCombsVls['material-lente'] == null ){
-		return [null, null];
-	}
+	if( r !== false ){
+		choiceCmbntId = r['id'];
 
-	if( ftrdCombsVls['tratamiento-cristal'] == null ){
-		return [null, null];
-	}
+		r = dtVcsItems({id_choice_combination:choiceCmbntId}).get();
 
-	for(i=0; i<  crystalsPrices.length ; i++){
-		if(
-			crystalsPrices[i]['receta'] == ftrdCombsVls['receta'] &&
-			crystalsPrices[i]['tipo-de-lente'] == ftrdCombsVls['tipo-de-lente'] &&
-			crystalsPrices[i]['material-lente'] == ftrdCombsVls['material-lente'] &&
-			crystalsPrices[i]['tratamiento-cristal'] == ftrdCombsVls['tratamiento-cristal']
-		){
-			return [crystalsPrices[i],i];
+		for(i=0; i<r.length; i++){
+			curItem = {
+				id :  r[i]['id'],
+				id_item : r[i]['id_item'],
+				item_type : r[i]['item_type'],
+				slug : r[i]['slug'],
+				label: r[i]['label'],
+				data_type: r[i]['data_type']
+			};
+
+			switch( curItem['item_type'] ){
+
+				case 'DATA':
+					curItem['data'] = getValueFromVCSItem( curItem );
+					break;
+
+				case 'FIELD':
+					curItem['field'] = getFieldFromVCSItem( curItem );
+					break;
+					
+			}
+
+			itemsData.push( curItem );
+
 		}
-	}
+
+		return [itemsData,choiceCmbntId];
+		
+	}	
 
 	return [null, null];
 }
