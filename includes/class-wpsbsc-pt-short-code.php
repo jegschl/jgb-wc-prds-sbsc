@@ -179,6 +179,7 @@ class SBSCDefPTShortCode{
                 }
 
                 $r[$slug]['options'][] = [
+                    'id'    => $raw_opt['id'],
                     'label' => $raw_opt['selectable_value_label'],
                     'slug'  => $raw_opt['selectable_value_slug'],
                     'value' => $raw_opt['selectable_value_slug']
@@ -380,22 +381,27 @@ class SBSCDefPTShortCode{
         } else {
             global $post;
             $prod = wc_get_product( $post->ID );
-            $atts['sku'] = $prod->get_sku();
+            if( $prod && is_a( $prod, 'WC_Product' ) ){
+                $atts['sku'] = $prod->get_sku();
 
             
-            $wpsbsc_post = get_post( $atts['id'] );
-            if( $wpsbsc_post && ( get_post_type( $wpsbsc_post ) == JGB_WPSBSC_CPT_NM_SBSC_DEFINITION ) ){
-                // cargar contenido JSON del CPT.
-                $json = get_post_field('post_content', $atts['id']);
+                $wpsbsc_post = get_post( $atts['id'] );
+                if( $wpsbsc_post && ( get_post_type( $wpsbsc_post ) == JGB_WPSBSC_CPT_NM_SBSC_DEFINITION ) ){
+                    // cargar contenido JSON del CPT.
+                    $json = get_post_field('post_content', $atts['id']);
 
-                // procesar JSON para generar los datos.
-                $atts['steps'] = json_decode( $json, true );
+                    // procesar JSON para generar los datos.
+                    $atts['steps'] = json_decode( $json, true );
 
-                $this->enqueue_scripts( $atts );
+                    $this->enqueue_scripts( $atts );
 
+                }
+
+                $output = $this->render_html( $atts );
+
+            } else {
+                $output = $this->render_error_html( 'No es un producto válido.');
             }
-
-            $output = $this->render_html( $atts );
 
         }
 
