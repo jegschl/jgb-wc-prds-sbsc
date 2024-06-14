@@ -58,14 +58,14 @@ class SBSCDefinitionPostType{
 
             
 
-            $sbn   = "jsoneditor.min";
+            /* $sbn   = "jsoneditor.min";
             $sid   = $sbn . "-js";
             $sbfn  = $sbn . ".js";
             $surl  = $plg_dir . 'admin/js/jsoneditor/dist/' . $sbfn;
             $spath = $plg_dir . 'admin/js/jsoneditor/dist/' . $sbfn;
             $sftk  = filemtime($spath);
 
-            wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true );
+            wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true ); */
 
 
             $sbn   = "jgb-mem-sheet-mtx";

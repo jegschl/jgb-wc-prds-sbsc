@@ -47,20 +47,16 @@ function getUrlParameter(sParam) {
                 onChange: prepareJsonUpdate
             };
 
-            adminFrontJsonEditor = new JSONEditor(container[0], conf)
+            if( typeof JSONEditor !== 'undefined' ){
+                adminFrontJsonEditor = new JSONEditor(container[0], conf)
 
-            // set json
-            adminFrontJsonEditor.set( JSON.parse( originalData ) );
-
-            
+                // set json
+                adminFrontJsonEditor.set( JSON.parse( originalData ) );
+            }
 
         }
 
-        $('#choices-tree-input textarea').on('change paste', () => {
-            
-		} );
-
-		$('.import-button-wrapper .button').click( () => {
+        $('.import-button-wrapper .button').click( () => {
             $.blockUI();
 
             const postId = getUrlParameter('post');
