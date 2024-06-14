@@ -561,7 +561,7 @@ function cpMatchs(){
 	$(document).on( 'pumBeforeOpen', ppuMkrSlctr, function(evnt){
 
 		
-		swiper = new Swiper('#pum-22562 .swiper', {
+		swiper = new Swiper( ppuMkrSlctr + ' .swiper', {
 			// Optional parameters
 			direction: 'horizontal',
 			loop: false,
