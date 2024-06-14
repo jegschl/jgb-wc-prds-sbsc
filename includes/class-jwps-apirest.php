@@ -40,6 +40,9 @@ class JWPSAdminApiRest {
     }
 
     public function receive_decision_tree_data( WP_REST_Request $r ){
+
+        $l = wc_get_logger();
+        $l->info('receive_decision_tree_data');
         
         $response = [ 'error' => ['status' => false, 'code' => 0 ] ];
 
