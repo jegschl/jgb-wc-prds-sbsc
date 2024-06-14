@@ -73,9 +73,11 @@ class Jgb_Wc_Prds_Sbsc_Public {
 		 * class.
 		 */
 		if( is_product() ){
+			$css_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'js/lib/swiper11/swiper-bundle.min.css';
 			wp_enqueue_style( 
 				'jgb-wpsbsc-swiper-bundle',
-				"https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+				//"https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+				$css_script_fl_jcplg
 			);
 
 			$css_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css';
@@ -83,7 +85,7 @@ class Jgb_Wc_Prds_Sbsc_Public {
 			$tversion = filemtime($css_script_fl_jcplg_path);
 			wp_enqueue_style( 
 				$this->plugin_name, 
-				plugin_dir_url( __FILE__ ) . 'css/jgb-wc-prds-sbsc-public.css', 
+				$css_script_fl_jcplg, 
 				array('jgb-wpsbsc-swiper-bundle'),
 				$tversion,
 				'all' 
@@ -112,9 +114,11 @@ class Jgb_Wc_Prds_Sbsc_Public {
 		 */
 		if( is_product() ){
 
+			$js_script_fl_jcplg = plugin_dir_url( __FILE__ ) . 'js/lib/swiper11/swiper-bundle.js';
+
 			wp_enqueue_script( 
 				'swiper-bundle', 
-				"https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js",
+				$js_script_fl_jcplg,
 				array( 'jquery' ), 
 				false,
 				false 
