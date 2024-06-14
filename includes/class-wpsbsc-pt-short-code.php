@@ -33,7 +33,7 @@ class SBSCDefPTShortCode{
     }
 
     public function render_button_crystal_selection() {
-        $pm_id = $this->popup_maker_id;
+        $pm_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
         ?>
         <div class="button-select-crystals">
             <button class="popmake-<?= $pm_id ?> pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
@@ -312,6 +312,8 @@ class SBSCDefPTShortCode{
     }
 
     function enqueue_scripts( &$atts ){
+
+        $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
 
         $opts = get_post_meta( $atts['id'], JGB_WPSBSC_CPT_MKNM_OPTIONS, true );
 
