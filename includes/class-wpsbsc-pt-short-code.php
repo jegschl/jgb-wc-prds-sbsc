@@ -10,6 +10,8 @@ class SBSCDefPTShortCode{
 
     protected $tplsPaths;
 
+    protected $popup_maker_id;
+
     function __construct( $plugin_path ){
         
         $this->plg_path = $plugin_path;
@@ -20,6 +22,8 @@ class SBSCDefPTShortCode{
 
         $this->tplsPaths['plugin'] = $this->plg_path . "public/partials/short-code-wpsbsc-cpt/";
 
+        $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
+
         add_shortcode( JGB_WPSBSC_SC_NM_SBSC_DEFINITION_CPT,[ $this, 'execute' ] );
 
         add_action('JGB/WPSBSC/render_fields',[$this,'render_fields']);
@@ -29,7 +33,7 @@ class SBSCDefPTShortCode{
     }
 
     public function render_button_crystal_selection() {
-        $pm_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
+        $pm_id = $this->popup_maker_id;
         ?>
         <div class="button-select-crystals">
             <button class="popmake-<?= $pm_id ?> pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
@@ -330,6 +334,8 @@ class SBSCDefPTShortCode{
             $script_array_info['endStepWraperTpl'] = $this->get_step_wraper_end_tpl();
 
             $script_array_info['stepTitles'] = $this->get_step_titles( $atts['id'] );
+
+            $script_array_info['popupMakerId'] = $this->popup_maker_id;
             
             $jsid = 'taffy-min';
             $jsfn = $jsid . '.js';

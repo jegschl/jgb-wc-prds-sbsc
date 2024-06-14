@@ -1,5 +1,5 @@
 let swiper;
-let selector = '#pum-22562';
+let ppuMkrSlctr;
 let selectedFeatures = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
@@ -558,7 +558,7 @@ function cpMatchs(){
 		}
 	}
 
-	$(document).on( 'pumBeforeOpen', selector, function(evnt){
+	$(document).on( 'pumBeforeOpen', ppuMkrSlctr, function(evnt){
 
 		
 		swiper = new Swiper('#pum-22562 .swiper', {
@@ -633,6 +633,7 @@ function cpMatchs(){
 
 	$(document).ready( ()=>{
 		initializeDb();
+		ppuMkrSlctr = '#pum-' + JGB_WPSBSC_DATA['popupMakerId'];
 	});
 
 })( jQuery );
