@@ -95,7 +95,8 @@ class SBSCDefinitionPostType{
             $spath = $plg_dir . 'admin/js/' . $sbfn;
             $sftk  = filemtime($spath);
 
-            wp_enqueue_script( $sid, $surl, array('jquery','jsoneditor.min-js','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
+            //wp_enqueue_script( $sid, $surl, array('jquery','jsoneditor.min-js','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
+            wp_enqueue_script( $sid, $surl, array('jquery','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
 
 
             wp_localize_script( $sid, 'JGB_WPSBSC_CPT_DEF_DATA', $dt );
