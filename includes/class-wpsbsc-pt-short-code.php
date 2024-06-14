@@ -29,10 +29,10 @@ class SBSCDefPTShortCode{
     }
 
     public function render_button_crystal_selection() {
-        
+        $pm_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
         ?>
         <div class="button-select-crystals">
-            <button class="popmake-22562 pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
+            <button class="popmake-<?= $pm_id ?> pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
         </div>
         <?php
     }
