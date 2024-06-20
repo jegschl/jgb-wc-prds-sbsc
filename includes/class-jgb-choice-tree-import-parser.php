@@ -38,6 +38,8 @@ class JGBWPSChoiceTreeImportParser{
     protected $previousFieldSlugRoSNotMultiple; // Store last field slug in the same reading row.
 
     protected $postId;
+
+    protected $parentFVPath;
     
     function __construct( $data = null )
     {
@@ -307,6 +309,19 @@ class JGBWPSChoiceTreeImportParser{
         return $currentData;
     }
 
+    function addFVPairToParentFVPathString( $fieldId, $valueId ){
+        if( $this->currentSoC < 1 ){
+            $this->parentFVPath = '';        
+        }   
+
+        $this->parentFVPath .= $this->currentSoC > 0 ? ',' : '';
+
+        $this->parentFVPath .= $fieldId . '=' . $valueId;
+
+        return $this->parentFVPath;
+    
+    }
+
     function process_col_value_type_radio( $currentFldData, $data, $subParameter, $soc, $ctip ){
         
         if( ( trim( $data ) == '-') || ( '' == trim( $data ) ) ){
@@ -557,9 +572,11 @@ class JGBWPSChoiceTreeImportParser{
             $itrs .= $i > 0 ? ',' : '';
             $itrs .= $id;        
         }
-        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_field ";
-        $q .= "WHERE id IN ($itrs)";
-        $wpdb->query( $q );
+        if( !empty( $itrs ) ){
+            $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_field ";
+            $q .= "WHERE id IN ($itrs)";
+            $wpdb->query( $q );
+        }
 
         /* ELiminar items DATA de tabla items_data. */
         $itrs = '';
@@ -568,9 +585,11 @@ class JGBWPSChoiceTreeImportParser{
             $itrs .= $i > 0 ? ',' : '';
             $itrs .= $id;        
         }
-        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_data ";
-        $q .= "WHERE id IN ($itrs)";
-        $wpdb->query( $q );
+        if( !empty( $itrs ) ){
+            $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_data ";
+            $q .= "WHERE id IN ($itrs)";
+            $wpdb->query( $q );
+        }
 
         /* Eliminar items de tabla vcs_items. */
         $itrs = '';
@@ -579,9 +598,11 @@ class JGBWPSChoiceTreeImportParser{
             $itrs .= $i > 0 ? ',' : '';
             $itrs .= $id;        
         }
-        $q  = "DELETE FROM {$pfx}jgb_wpsbsc_vcs_items ";
-        $q .= "WHERE id IN ($itrs)";
-        $wpdb->query( $q );
+        if( !empty( $itrs ) ){
+            $q  = "DELETE FROM {$pfx}jgb_wpsbsc_vcs_items ";
+            $q .= "WHERE id IN ($itrs)";
+            $wpdb->query( $q );
+        }
 
         /* Eliminar registros de tabla choices_available */
         $wpdb->delete(
