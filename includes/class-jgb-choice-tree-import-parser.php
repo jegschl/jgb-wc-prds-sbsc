@@ -37,6 +37,8 @@ class JGBWPSChoiceTreeImportParser{
     
     protected $previousFieldSlugRoSNotMultiple; // Store last field slug in the same reading row.
 
+    protected $previousFieldIdRoSNotMultiple; // Store last field id in the same reading row.
+    
     protected $postId;
 
     protected $parentFVPath;
@@ -201,6 +203,10 @@ class JGBWPSChoiceTreeImportParser{
 
                 $this->previousValueSlugRoSNotMultiple = null;
 
+                $this->previousFieldIdRoSNotMultiple = null;
+
+                /* $this->parentFVPath = ''; */
+
                 $this->store_vcs_in_process();
 
             } else {
@@ -211,7 +217,7 @@ class JGBWPSChoiceTreeImportParser{
 
         }
 
-        $this->store_data();
+        //$this->store_data();
         
     }
 
@@ -242,10 +248,86 @@ class JGBWPSChoiceTreeImportParser{
         
     }
 
+    function sd_field_basic_data( &$fld, $postId ){
+        
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        $tbl_nm = "{$pfx}jgb_wpsbsc_fields";
+
+        $query = "SELECT * FROM $tbl_nm WHERE post_id = $postId AND slug = \"{$fld['slug']}\"";
+
+        $r = $wpdb->get_row( $query, ARRAY_A );
+
+        if( is_array( $r ) && count( $r ) > 0 ){
+            $fld['stored_id'] = $r['id'];
+            return $r['id'];
+        }
+
+        $data = [
+            'post_id'           => $postId,
+            'slug'              => $fld['slug'],
+            'name'              => $fld['label'],
+            'priority_in_step'  => $fld['priority_in_step']
+        ];
+
+        $format = ['%d','%s','%s'];
+
+        if( $wpdb->insert(
+                "{$pfx}jgb_wpsbsc_fields",
+                $data,
+                $format
+            ) 
+        ){
+            $fldId = $wpdb->insert_id;
+
+            $fld['stored_id'] = $fldId;
+
+            
+
+        } else {
+            $fld['stored_id'] = null;
+        }
+
+        return $fldId;
+
+    }
+
+    function sd_available_value( &$nv, $field_id, $parent_field_id  ){
+            
+        global $wpdb;
+
+        $pfx = $wpdb->prefix;
+
+        $table_nm = "{$pfx}jgb_wpsbsc_choices_availables";
+
+        $data = [
+            'post_id'  => $this->postId,
+            'field_id' => $field_id,
+            'selectable_value_slug' => $nv['slug'],
+            'selectable_value_label'=> $nv['label'],
+            'parent_field_id' => $parent_field_id,
+            'parent_on_browser_selected_slug_value' => $nv['parent']['value_slug'],
+            'parents_fv_path' => $nv['parents_fv_path']
+        ];
+
+        if( $wpdb->insert(
+            "{$pfx}jgb_wpsbsc_choices_availables",
+            $data
+            ) 
+        ){
+            $nv['stored_id'] = $wpdb->insert_id;
+        }
+
+        return $wpdb->insert_id;
+    }
+
     function process_dt_col_fld_lbl( $currentData, $data, $subParameter, $soc, $ctip ){
         $currentData['label'] = trim($data);
         $currentData['slug'] = sanitize_title( trim( $data ) );
         $currentData['priority_in_step'] = $soc;
+        $this->sd_field_basic_data( $currentData, $this->postId );
         return $currentData;
     }
 
@@ -378,14 +460,32 @@ class JGBWPSChoiceTreeImportParser{
                         'value_slug' => $this->previousValueSlugRoSNotMultiple,
                         'field_slug' => $this->previousFieldSlugRoSNotMultiple 
                     ];
+
+                    $nv['parents_fv_path'] = $this->parentFVPath;
                 }
 
+                $this->sd_available_value(
+                    $nv, 
+                    $currentFldData['stored_id'], 
+                    $this->previousFieldIdRoSNotMultiple
+                );
+
                 $currentFldData['value-def']['values'][] = $nv;
+                
+            } else {
+                foreach( $matchs as $m ){
+                    $nv['stored_id'] = $m['stored_id'];
+                    break;
+                }
             }
 
             $this->previousFieldSlugRoSNotMultiple = $currentFldData['slug'];
 
             $this->previousValueSlugRoSNotMultiple = $this->currentValueSlugInVTM;
+
+            $this->previousFieldIdRoSNotMultiple = $currentFldData['stored_id'];
+
+            $this->addFVPairToParentFVPathString( $currentFldData['stored_id'], $nv['stored_id'] );
 
             $this->check_field_for_process_vcs( $currentFldData );
 
