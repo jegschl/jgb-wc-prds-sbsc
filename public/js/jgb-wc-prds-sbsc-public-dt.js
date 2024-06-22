@@ -45,6 +45,7 @@ function loadFeatures(){
 	selectedFeatures = [];
 	dtFields().order("priority_in_step asec, id asec").each( (record)=>{
 		const feature = {
+			'fieldId': record["id"],
 			'field': record["slug"],
 			'label': record["name"],
 			'vlSltr': "input[name='" + record["slug"] + "']",
@@ -65,6 +66,14 @@ function getFeatureValue( fieldSlug ){
 	}
 }
 
+function getFeatureValueId( fieldSlug ){
+	let i;
+	for(i=0; i<selectedFeatures.length; i++){
+		if( selectedFeatures[i].field == fieldSlug ){
+			return selectedFeatures[i].valueRegId;
+		}
+	}
+}
 
 function getFieldsPriority(){
 	let r = [];
@@ -106,9 +115,35 @@ function get_first_field_to_render(){
 	return r;
 }
 
-function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
+function asemblyParentFVPathUntil( parentFfieldId ){
+	let i;
+	let rs = '';
+
+	for(i=0; i<selectedFeatures.length; i++){
+		rs += i > 0 ? ',' : '';
+		
+		if( selectedFeatures[i].fieldId == parentFfieldId ){
+			
+			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
+			
+			break;
+		
+		} else {
+		
+			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
+		
+		}
+	}
 	
-	const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
+	return rs;
+}
+
+function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
+
+	const parentsFVPath = asemblyParentFVPathUntil( parentFfieldId );
+	
+	//const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
+	const q = {parents_fv_path:parentsFVPath.toString()}; 
 
 	let r = [];
 
@@ -340,7 +375,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			}
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
-			setFeatureValue( fieldSlug, valueSelected, valueLabel, valueRegId );
+			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
 			desplegarSFs();
 			desplegarPrice();
 			renderNextStep( fieldId, valueSelected );
@@ -405,11 +440,12 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldSlug, valueSlug, valueLabel, valueRegId ){
+function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId ){
 	let i;
 	let removeFrom = -1;
 	for(i=0; i<selectedFeatures.length; i++){
 		if( selectedFeatures[i].field == fieldSlug ){
+			selectedFeatures[i].fieldId == fieldId;
 			selectedFeatures[i].value = valueSlug;
 			selectedFeatures[i].valueLabel = valueLabel;
 			selectedFeatures[i].valueRegId = valueRegId;
