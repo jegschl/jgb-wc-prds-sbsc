@@ -102,21 +102,21 @@ class JGBWPSChoiceTreeImportParser{
         }
     }
 
-    private function set_fields_storer_by_type_hooks(){
+        private function set_columns_storer_by_type_hooks(){
         
         $hooks_array = [
             
             'radio' => [
-                'callback' => [$this,'sd_storer_type_radio'],
+                'callback' => [$this,'sd_col_tp_radio'],
                 'priority' => 30
             ]
 
         ];
 
-        $hooks_array = apply_filters( 'jgb/wpsbsc/import/fields_by_type_storer_hooks', $hooks_array );
+        $hooks_array = apply_filters( 'jgb/wpsbsc/import/columns_by_type_storer_hooks', $hooks_array );
 
         foreach( $hooks_array as $hook_sufix => $hcb ){
-            add_filter('JGB/wpsbsc/store_field_data/type_' . $hook_sufix, $hcb['callback'], $hcb['priority'], 2 );
+            add_filter('JGB/wpsbsc/store_column_data/type_' . $hook_sufix, $hcb['callback'], $hcb['priority'], 2 );
         }
     }
 
@@ -128,7 +128,7 @@ class JGBWPSChoiceTreeImportParser{
 
         $this->set_value_def_type_parsers_hooks();
 
-        $this->set_fields_storer_by_type_hooks();
+        $this->set_columns_storer_by_type_hooks();
 
         $this->valuesCombinationSets = [];
     }
@@ -183,6 +183,8 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function process_input( $data ){
+
+        $this->sd_reset();
         
         $this->linesCount = count( $data );
         
@@ -248,8 +250,19 @@ class JGBWPSChoiceTreeImportParser{
         
     }
 
-    function sd_field_basic_data( &$fld, $postId ){
-        
+    function sd_column_bsdt( &$fld, $postId ){
+
+        $fld = apply_filters(
+            'JGB/wpsbsc/store_column_data/type_' . $fld['value-def']['type'],
+            $fld,
+            $postId
+        );
+
+        return $fld['stored_id'];
+
+    }
+     
+    function sd_col_tp_radio( $fld, $postId ){
         global $wpdb;
 
         $pfx = $wpdb->prefix;
@@ -290,7 +303,7 @@ class JGBWPSChoiceTreeImportParser{
             $fld['stored_id'] = null;
         }
 
-        return $fldId;
+        return $fld;
 
     }
 
@@ -327,7 +340,7 @@ class JGBWPSChoiceTreeImportParser{
         $currentData['label'] = trim($data);
         $currentData['slug'] = sanitize_title( trim( $data ) );
         $currentData['priority_in_step'] = $soc;
-        $this->sd_field_basic_data( $currentData, $this->postId );
+        
         return $currentData;
     }
 
@@ -350,7 +363,7 @@ class JGBWPSChoiceTreeImportParser{
 
     function process_dt_col_fld_def( $currentData, $data, $subParameter, $soc, $ctip ){
         $currentData[ $subParameter ] = json_decode( '{'. $data . '}', true );
-
+        $this->sd_column_bsdt( $currentData, $this->postId );
         /* $fieldDefStrings = explode(',',$data);
         foreach( $fieldDefStrings as $k => $v ){
             $currentData[ $subParameter ] = json_decode( '{'. $v . '}', true );
@@ -418,84 +431,61 @@ class JGBWPSChoiceTreeImportParser{
         
         $nv = [];
 
-        if( isset( $currentFldData['value-def']['value-type'] ) && $currentFldData['value-def']['value-type'] == 'multiple' ){
+        
+        
+        $this->currentValueSlugInVTM = sanitize_title( $data );
+
+        $matchs = array_filter( $currentFldData['value-def']['values'],[$this,'checkValues'],ARRAY_FILTER_USE_BOTH);
+
+        if( count( $matchs ) == 0 ){
+        
+            $nv['label'] = $data;
+        
+            $nv['slug'] = sanitize_title( $data );
             
-            $array_values = explode(',',$data);
-            
-            foreach( $array_values as $vl ){
-               
-                $nv['multiple'] = [];
+            if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
                 
-                $nv['multiple'][] = [
-                    'slug' => sanitize_title( $vl ),
-                    'label' => $vl
+                $nv['parent']=[
+                    'value_slug' => $this->previousValueSlugRoSNotMultiple,
+                    'field_slug' => $this->previousFieldSlugRoSNotMultiple 
                 ];
-                
-                if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
-                   
-                    $nv['parent']=[
-                        'value_slug' => $this->previousValueSlugRoSNotMultiple,
-                        'field_slug' => $this->previousFieldSlugRoSNotMultiple 
-                    ];
 
-                }
-
+                $nv['parents_fv_path'] = $this->parentFVPath;
             }
+
+            $this->sd_available_value(
+                $nv, 
+                $currentFldData['stored_id'], 
+                $this->previousFieldIdRoSNotMultiple
+            );
+
+            $currentFldData['value-def']['values'][] = $nv;
             
         } else {
-        
-            $this->currentValueSlugInVTM = sanitize_title( $data );
-
-            $matchs = array_filter( $currentFldData['value-def']['values'],[$this,'checkValues'],ARRAY_FILTER_USE_BOTH);
-
-            if( count( $matchs ) == 0 ){
-            
-                $nv['label'] = $data;
-            
-                $nv['slug'] = sanitize_title( $data );
-                
-                if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
-                    
-                    $nv['parent']=[
-                        'value_slug' => $this->previousValueSlugRoSNotMultiple,
-                        'field_slug' => $this->previousFieldSlugRoSNotMultiple 
-                    ];
-
-                    $nv['parents_fv_path'] = $this->parentFVPath;
-                }
-
-                $this->sd_available_value(
-                    $nv, 
-                    $currentFldData['stored_id'], 
-                    $this->previousFieldIdRoSNotMultiple
-                );
-
-                $currentFldData['value-def']['values'][] = $nv;
-                
-            } else {
-                foreach( $matchs as $m ){
-                    $nv['stored_id'] = $m['stored_id'];
-                    break;
-                }
+            foreach( $matchs as $m ){
+                $nv['stored_id'] = $m['stored_id'];
+                break;
             }
-
-            $this->previousFieldSlugRoSNotMultiple = $currentFldData['slug'];
-
-            $this->previousValueSlugRoSNotMultiple = $this->currentValueSlugInVTM;
-
-            $this->previousFieldIdRoSNotMultiple = $currentFldData['stored_id'];
-
-            $this->addFVPairToParentFVPathString( $currentFldData['stored_id'], $nv['stored_id'] );
-
-            $this->check_field_for_process_vcs( $currentFldData );
-
         }
 
+        $this->previousFieldSlugRoSNotMultiple = $currentFldData['slug'];
+
+        $this->previousValueSlugRoSNotMultiple = $this->currentValueSlugInVTM;
+
+        $this->previousFieldIdRoSNotMultiple = $currentFldData['stored_id'];
+
+        $this->addFVPairToParentFVPathString( $currentFldData['stored_id'], $nv['stored_id'] );
+
+        $this->check_field_for_process_vcs( $currentFldData );
+
+        
+
         return $currentFldData;
+
     }
 
     function process_col_value_type_data( $currentFldData, $data, $subParameter, $soc, $ctip ){
-        if( is_null( $data ) && empty( $data ) && ( trim( $data ) == '-' ) ){
+        if( is_null( $data ) || empty( $data ) || ( trim( $data ) == '-' ) ){
             return $currentFldData;
         }
 
@@ -721,87 +711,6 @@ class JGBWPSChoiceTreeImportParser{
             ['%d']
         );
 
-        
-
-    }
-
-    function sd_storer_type_radio( $fld, $postId ){
-        
-        global $wpdb;
-        
-        $pfx = $wpdb->prefix;
-
-        $data = [
-            'post_id'           => $postId,
-            'slug'              => $fld['slug'],
-            'name'              => $fld['label'],
-            'priority_in_step'  => $fld['priority_in_step']
-        ];
-
-        $format = ['%d','%s','%s'];
-
-        if( $wpdb->insert(
-                "{$pfx}jgb_wpsbsc_fields",
-                $data,
-                $format
-            ) 
-        ){
-            $fldId = $wpdb->insert_id;
-
-            $fld['stored_id'] = $fldId;
-
-            foreach( $fld['value-def']['values'] as &$vl ){
-                
-                $choices_data = [
-                    'post_id'  => $postId,
-                    'field_id' => $fldId,
-                    'selectable_value_slug' => $vl['slug'],
-                    'selectable_value_label'=> $vl['label']
-                ];
-
-                if( isset( $vl['parent'] ) ){
-
-                    $query = "SELECT * FROM {$pfx}jgb_wpsbsc_fields WHERE post_id = {$postId} AND slug = \"{$vl['parent']['field_slug']}\"";
-                    
-                    $r = $wpdb->get_row($query, ARRAY_A );
-                    
-                    if( is_Array( $r ) && count( $r ) > 0 ){
-                        
-                        $choices_data['parent_field_id'] = $r['id'];
-                        
-                        $choices_data['parent_on_browser_selected_slug_value'] = $vl['parent']['value_slug'];
-                    
-                    }
-                    
-                }
-
-                if( $wpdb->insert(
-                    "{$pfx}jgb_wpsbsc_choices_availables",
-                    $choices_data
-                    ) 
-                ){
-                    $vl['stored_id'] = $wpdb->insert_id;
-                }
-
-            }
-
-        }
-
-        return $fld;
-
-    }
-
-    private function sd_fields(){
-        
-        foreach( $this->processedFields as &$fld ){
-
-            $fld = apply_filters(
-                'JGB/wpsbsc/store_field_data/type_' . $fld['value-def']['type'],
-                $fld,
-                $this->postId
-            );
-
-        }
     }
 
     private function sd_vcs_items(){
@@ -978,12 +887,6 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     private function store_data(){
-
-        // reset old data.
-        $this->sd_reset();
-
-        // storing fields y VCS for radio type fields.
-        $this->sd_fields();
 
         // Storing VCS's Slugs and items
         $this->sd_vcs_items();
