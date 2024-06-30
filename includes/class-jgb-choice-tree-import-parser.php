@@ -192,7 +192,8 @@ class JGBWPSChoiceTreeImportParser{
 
     function process_input( $data ){
 
-        $memlim = ini_get('memory_limit');
+        // by delete
+       /*  $memlim = ini_get('memory_limit');
 
         $nml = '1024M';
 
@@ -200,7 +201,8 @@ class JGBWPSChoiceTreeImportParser{
 
         @ini_set('memory_limit' , $nml);
 
-        $curr_memlim = ini_get('memory_limit');
+        $curr_memlim = ini_get('memory_limit'); */
+        // until here by delete
 
         $this->sd_reset();
         
@@ -239,10 +241,12 @@ class JGBWPSChoiceTreeImportParser{
 
         }
 
+        // by delete
         @ini_set('memory_limit' , $memlim);
 
         $curr_memlim = ini_get('memory_limit');
-
+        // until here by delete
+        
         //$this->store_data();
         
     }
@@ -987,10 +991,4 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function store_data(){
-
-        // Storing VCS's Slugs and items
-        $this->sd_vcs_items();
-
-    }
 }
