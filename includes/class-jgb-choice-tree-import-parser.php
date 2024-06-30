@@ -42,6 +42,8 @@ class JGBWPSChoiceTreeImportParser{
     protected $postId;
 
     protected $parentFVPath;
+
+    protected $parentFVPathInProcess;
     
     function __construct( $data = null )
     {
@@ -405,6 +407,7 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function addFVPairToParentFVPathString( $fieldId, $valueId ){
+        // deprecated
         if( $this->currentSoC < 1 ){
             $this->parentFVPath = '';        
         }   
@@ -412,6 +415,13 @@ class JGBWPSChoiceTreeImportParser{
         $this->parentFVPath .= $this->currentSoC > 0 ? ',' : '';
 
         $this->parentFVPath .= $fieldId . '=' . $valueId;
+        // until here deprecated 
+        
+        $this->parentFVPath = $this->get_curent_partial_vcs_str( 
+            $this->parentFVPath,
+            $fieldId, 
+            $valueId
+        );
 
         return $this->parentFVPath;
     
@@ -476,7 +486,7 @@ class JGBWPSChoiceTreeImportParser{
 
         $this->addFVPairToParentFVPathString( $currentFldData['stored_id'], $nv['stored_id'] );
 
-        $this->check_field_for_process_vcs( $currentFldData );
+        $this->check_field_for_process_vcs( $currentFldData, $nv['stored_id'] );
 
         
 
@@ -524,11 +534,13 @@ class JGBWPSChoiceTreeImportParser{
         return $currentFldData;
     }
 
-    function check_field_for_process_vcs( $currentFieldDataProcessing ){
+    function check_field_for_process_vcs( $currentFieldDataProcessing, $permanent_stored_value_id ){
         
         if( !is_null( $currentFieldDataProcessing['values-combination-set'] ) && is_array( $currentFieldDataProcessing['values-combination-set'] )){
 
             foreach( $currentFieldDataProcessing['values-combination-set'] as $vcs ){
+
+                // deprecated
 
                 if( !isset( $this->vcsInProcess[ $vcs ] ) ){
                     
@@ -540,10 +552,42 @@ class JGBWPSChoiceTreeImportParser{
 
                 $this->vcsInProcess[ $vcs ]['values-slugs-combinations'][] = $this->currentValueSlugInVTM;
 
+                // until here deprecated.
+
+
+                if( !isset( $this->parentFVPathInProcess[ $vcs ] ) ){
+                    $this->parentFVPathInProcess[ $vcs ] = '';
+                } else {
+                    $this->parentFVPathInProcess[ $vcs ] .= ',';
+                }
+
+                $this->parentFVPathInProcess[ $vcs ] .= $this->get_curent_partial_vcs_str( 
+                                                            $this->parentFVPathInProcess[ $vcs ],
+                                                            $currentFieldDataProcessing['strored_id'], 
+                                                            $permanent_stored_value_id
+                                                        );
+
             }
 
         }
 
+    }
+
+    function get_curent_partial_vcs_str( $currentFVPathStr, $currentFieldDataProcessingId, $permanent_stored_value_id ){
+
+        if( $currentFVPathStr != ''){
+            $vcs = $currentFVPathStr . ',';
+        } else {
+            $vcs = '';
+        }
+
+        $vcs .= $currentFieldDataProcessingId;
+
+        $vcs .= '=';
+
+        $vcs .= $permanent_stored_value_id;
+
+        return $vcs;
     }
 
     function store_vcs_in_process(){
