@@ -227,7 +227,7 @@ class JGBWPSChoiceTreeImportParser{
 
                 $this->previousFieldIdRoSNotMultiple = null;
 
-                /* $this->parentFVPath = ''; */
+                $this->parentFVPath = '';
 
                 $this->store_vcs_in_process();
 
@@ -242,14 +242,17 @@ class JGBWPSChoiceTreeImportParser{
         }
 
         // by delete
+        /*
         @ini_set('memory_limit' , $memlim);
 
         $curr_memlim = ini_get('memory_limit');
-        
+        */
         
         //$this->store_data();
 
         // until here by delete
+
+        $this->sd_vcs_items();
         
     }
 
@@ -356,7 +359,7 @@ class JGBWPSChoiceTreeImportParser{
         ];
 
         if( $wpdb->insert(
-            "{$pfx}jgb_wpsbsc_choices_availables",
+            $table_nm,
             $data
             ) 
         ){
@@ -474,10 +477,12 @@ class JGBWPSChoiceTreeImportParser{
             
             if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
                 
+                //deprecated
                 $nv['parent']=[
                     'value_slug' => $this->previousValueSlugRoSNotMultiple,
                     'field_slug' => $this->previousFieldSlugRoSNotMultiple 
                 ];
+                // until here deprecated
 
                 $nv['parents_fv_path'] = $this->parentFVPath;
             }
@@ -530,27 +535,31 @@ class JGBWPSChoiceTreeImportParser{
 
         }
      
-        if( isset( $this->vcsInProcess[ $vcsm ] ) ){
+        if( !isset( $this->vcsInProcess[ $vcsm ] ) ){
 
-            $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
+            $this->vcsInProcess[ $vcsm ] = [];
+        
+        }
 
-            if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
-                
-                $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
+        $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
 
-            }
-
-            $dataType = !in_array( $currentFldData['data_type'], JGB_WPSBSC_ITEMS_DATA_TYPES ) || empty( $currentFldData['data_type'] ) ? 'INT' : $currentFldData['data_type'];
-
-            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
-                'slug'  => $currentFldData['slug'],
-                'label' => $currentFldData['label'],
-                'data_type' => $dataType,
-                'item_type' => 'DATA',
-                'value' => trim( $data )
-            ];
+        if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
+            
+            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
 
         }
+
+        $dataType = !in_array( $currentFldData['data_type'], JGB_WPSBSC_ITEMS_DATA_TYPES ) || empty( $currentFldData['data_type'] ) ? 'INT' : $currentFldData['data_type'];
+
+        $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
+            'slug'  => $currentFldData['slug'],
+            'label' => $currentFldData['label'],
+            'data_type' => $dataType,
+            'item_type' => 'DATA',
+            'value' => trim( $data )
+        ];
+
+        
 
         return $currentFldData;
     }
@@ -572,27 +581,29 @@ class JGBWPSChoiceTreeImportParser{
 
         }
      
-        if( isset( $this->vcsInProcess[ $vcsm ] ) ){
+        if( !isset( $this->vcsInProcess[ $vcsm ] ) ){
 
-            $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
+            $this->vcsInProcess[ $vcsm ] = [];
+        
+        }
 
-            if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
-                
-                $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
+        $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
 
-            }
-
-            $fieldType = !in_array( $currentFldData['field_type'], JGB_WPSBSC_ITEMS_FIELD_TYPES ) || empty( $currentFldData['field_type'] ) ? 'RADIO' : $currentFldData['field_type'];
-
-            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
-                'slug'  => $currentFldData['slug'],
-                'label' => $currentFldData['label'],
-                'item_type' => 'FIELD',
-                'field_type' => $fieldType,
-                'options' => trim( $data )
-            ];
+        if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
+            
+            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
 
         }
+
+        $fieldType = !in_array( $currentFldData['field_type'], JGB_WPSBSC_ITEMS_FIELD_TYPES ) || empty( $currentFldData['field_type'] ) ? 'RADIO' : $currentFldData['field_type'];
+
+        $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
+            'slug'  => $currentFldData['slug'],
+            'label' => $currentFldData['label'],
+            'item_type' => 'FIELD',
+            'field_type' => $fieldType,
+            'options' => trim( $data )
+        ];
 
         return $currentFldData;
     }
@@ -841,6 +852,7 @@ class JGBWPSChoiceTreeImportParser{
             } else {
                 
                 $d = [
+                    'post_id' => $this->postId,
                     'slug' => $k,
                     'desc' => $k
                 ];
@@ -859,7 +871,7 @@ class JGBWPSChoiceTreeImportParser{
 
                 foreach( $vcs as $sc ){
 
-                    $choicesCombinationId = $this->sd_slugs_combination( $sc['values-slugs-combinations'] );
+                    $choicesCombinationId = $this->sd_fv_parents_path_for_items( $sc['values-slugs-combinations'] );
                     
                     $vcsItemsIdsAndType = $this->sd_vcs_items_data( $sc['items'], $choicesCombinationId );
                     
@@ -908,7 +920,7 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function sd_slugs_combination( Array $slugs ){
+    private function sd_fv_parents_path_for_items( Array $slugs ){
 
         global $wpdb;
 
@@ -946,7 +958,10 @@ class JGBWPSChoiceTreeImportParser{
 
             if( $wpdb->insert(
                     "{$pfx}jgb_wpsbsc_choices_combinations",
-                    ['vls_ids_combinations_string' => $slugsString ]
+                    [
+                        'post_id'                     => $this->postId,
+                        'vls_ids_combinations_string' => $slugsString 
+                    ]
                 )
             ){
 
