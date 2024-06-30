@@ -245,9 +245,11 @@ class JGBWPSChoiceTreeImportParser{
         @ini_set('memory_limit' , $memlim);
 
         $curr_memlim = ini_get('memory_limit');
-        // until here by delete
+        
         
         //$this->store_data();
+
+        // until here by delete
         
     }
 
