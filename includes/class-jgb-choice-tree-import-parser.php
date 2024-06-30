@@ -9,6 +9,8 @@ define('JGB_WPS_CHCTREE_DATA_COL_PARSING_EMPTY',1);
 
 define('JGB_WPSBSC_ITEMS_DATA_TYPES', ['INT', 'DECIMAL', 'VARCHR'] );
 
+define('JGB_WPSBSC_ITEMS_FIELD_TYPES', ['CHECK','RADIO','SELECT','TEXT'] );
+
 class JGBWPSChoiceTreeImportParser{
 
     protected $linesCount;
@@ -43,15 +45,15 @@ class JGBWPSChoiceTreeImportParser{
 
     protected $parentFVPath;
 
-    protected $parentFVPathInProcess;
+    protected $parentFVPathForItemsInProcess;
+
+    protected $parentFVPathForItemsToKeepStored;
     
     function __construct( $data = null )
     {
         $this->setup();
 
         if( !is_null( $data ) && is_array( $data ) ){
-
-            
 
             $this->process_input( $data );
         }
@@ -65,6 +67,10 @@ class JGBWPSChoiceTreeImportParser{
             ],
             'radio' => [
                 'callback' => [$this,'process_col_value_type_radio'],
+                'priority' => 30
+            ],
+            'additional-selection' => [
+                'callback' => [$this,'process_col_value_type_field'],
                 'priority' => 30
             ]
         ];
@@ -186,6 +192,16 @@ class JGBWPSChoiceTreeImportParser{
 
     function process_input( $data ){
 
+        $memlim = ini_get('memory_limit');
+
+        $nml = '1024M';
+
+        $curr_memlim = '';
+
+        @ini_set('memory_limit' , $nml);
+
+        $curr_memlim = ini_get('memory_limit');
+
         $this->sd_reset();
         
         $this->linesCount = count( $data );
@@ -213,6 +229,8 @@ class JGBWPSChoiceTreeImportParser{
 
                 $this->store_vcs_in_process();
 
+                $this->mem_store_parents_fv_paths_in_process();
+
             } else {
 
                 continue;
@@ -220,6 +238,10 @@ class JGBWPSChoiceTreeImportParser{
             }
 
         }
+
+        @ini_set('memory_limit' , $memlim);
+
+        $curr_memlim = ini_get('memory_limit');
 
         //$this->store_data();
         
@@ -416,7 +438,7 @@ class JGBWPSChoiceTreeImportParser{
 
         $this->parentFVPath .= $fieldId . '=' . $valueId;
         // until here deprecated 
-        
+
         $this->parentFVPath = $this->get_curent_partial_vcs_str( 
             $this->parentFVPath,
             $fieldId, 
@@ -446,7 +468,7 @@ class JGBWPSChoiceTreeImportParser{
         $this->currentValueSlugInVTM = sanitize_title( $data );
 
         $matchs = array_filter( $currentFldData['value-def']['values'],[$this,'checkValues'],ARRAY_FILTER_USE_BOTH);
-
+        
         if( count( $matchs ) == 0 ){
         
             $nv['label'] = $data;
@@ -509,24 +531,68 @@ class JGBWPSChoiceTreeImportParser{
 
             $vcsm = $currentFldData['value-def']['vcs-match'];
 
-        }            
-
+        }
+     
         if( isset( $this->vcsInProcess[ $vcsm ] ) ){
-            
-            if( !isset( $this->vcsInProcess[ $vcsm ]['items'] ) ){
+
+            $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
+
+            if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
                 
-                $this->vcsInProcess[ $vcsm ]['items'] = [];
+                $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
 
             }
 
             $dataType = !in_array( $currentFldData['data_type'], JGB_WPSBSC_ITEMS_DATA_TYPES ) || empty( $currentFldData['data_type'] ) ? 'INT' : $currentFldData['data_type'];
 
-            $this->vcsInProcess[ $vcsm ]['items'][] = [
+            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
                 'slug'  => $currentFldData['slug'],
                 'label' => $currentFldData['label'],
                 'data_type' => $dataType,
                 'item_type' => 'DATA',
                 'value' => trim( $data )
+            ];
+
+        }
+
+        return $currentFldData;
+    }
+
+    function process_col_value_type_field( $currentFldData, $data, $subParameter, $soc, $ctip ){
+        if( is_null( $data ) || empty( $data ) || ( trim( $data ) == '-' ) ){
+            return $currentFldData;
+        }
+
+        $vcsm = '*';
+
+        if( 
+            isset( $currentFldData['value-def']['vcs-match'] ) 
+            && !empty( $currentFldData['value-def']['vcs-match'] ) 
+            
+        ){
+
+            $vcsm = $currentFldData['value-def']['vcs-match'];
+
+        }
+     
+        if( isset( $this->vcsInProcess[ $vcsm ] ) ){
+
+            $vcsParentFVPath = $this->parentFVPathForItemsInProcess[ $vcsm ];
+
+            if( !isset( $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] ) ){
+                
+                $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ] = [ 'items' => [] ];
+
+            }
+
+            $fieldType = !in_array( $currentFldData['field_type'], JGB_WPSBSC_ITEMS_FIELD_TYPES ) || empty( $currentFldData['field_type'] ) ? 'RADIO' : $currentFldData['field_type'];
+
+            $this->vcsInProcess[ $vcsm ][ $vcsParentFVPath ]['items'][] = [
+                'slug'  => $currentFldData['slug'],
+                'label' => $currentFldData['label'],
+                'item_type' => 'FIELD',
+                'field_type' => $fieldType,
+                'options' => trim( $data )
             ];
 
         }
@@ -555,17 +621,15 @@ class JGBWPSChoiceTreeImportParser{
                 // until here deprecated.
 
 
-                if( !isset( $this->parentFVPathInProcess[ $vcs ] ) ){
-                    $this->parentFVPathInProcess[ $vcs ] = '';
-                } else {
-                    $this->parentFVPathInProcess[ $vcs ] .= ',';
+                if( !isset( $this->parentFVPathForItemsInProcess[ $vcs ] ) ){
+                    $this->parentFVPathForItemsInProcess[ $vcs ] = '';
                 }
 
-                $this->parentFVPathInProcess[ $vcs ] .= $this->get_curent_partial_vcs_str( 
-                                                            $this->parentFVPathInProcess[ $vcs ],
-                                                            $currentFieldDataProcessing['strored_id'], 
-                                                            $permanent_stored_value_id
-                                                        );
+                $this->parentFVPathForItemsInProcess[ $vcs ] = $this->get_curent_partial_vcs_str( 
+                                                                    $this->parentFVPathForItemsInProcess[ $vcs ],
+                                                                    $currentFieldDataProcessing['stored_id'], 
+                                                                    $permanent_stored_value_id
+                                                                );
 
             }
 
@@ -588,6 +652,22 @@ class JGBWPSChoiceTreeImportParser{
         $vcs .= $permanent_stored_value_id;
 
         return $vcs;
+    }
+
+    function mem_store_parents_fv_paths_in_process(){
+
+        foreach( $this->parentFVPathForItemsInProcess as $vcsKey => &$pov ){
+
+            foreach( $pov as $path => &$doas ){ //doas = data or additional selection
+
+                $doas = null;
+
+            }
+
+            $pov = null;
+
+        }
+            
     }
 
     function store_vcs_in_process(){
