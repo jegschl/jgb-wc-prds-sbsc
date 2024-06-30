@@ -429,16 +429,7 @@ class JGBWPSChoiceTreeImportParser{
     }
 
     function addFVPairToParentFVPathString( $fieldId, $valueId ){
-        // deprecated
-        if( $this->currentSoC < 1 ){
-            $this->parentFVPath = '';        
-        }   
-
-        $this->parentFVPath .= $this->currentSoC > 0 ? ',' : '';
-
-        $this->parentFVPath .= $fieldId . '=' . $valueId;
-        // until here deprecated 
-
+        
         $this->parentFVPath = $this->get_curent_partial_vcs_str( 
             $this->parentFVPath,
             $fieldId, 
@@ -605,20 +596,6 @@ class JGBWPSChoiceTreeImportParser{
         if( !is_null( $currentFieldDataProcessing['values-combination-set'] ) && is_array( $currentFieldDataProcessing['values-combination-set'] )){
 
             foreach( $currentFieldDataProcessing['values-combination-set'] as $vcs ){
-
-                // deprecated
-
-                if( !isset( $this->vcsInProcess[ $vcs ] ) ){
-                    
-                    $this->vcsInProcess[ $vcs ] = [
-                        'values-slugs-combinations' => []
-                    ];
-
-                }
-
-                $this->vcsInProcess[ $vcs ]['values-slugs-combinations'][] = $this->currentValueSlugInVTM;
-
-                // until here deprecated.
 
 
                 if( !isset( $this->parentFVPathForItemsInProcess[ $vcs ] ) ){
