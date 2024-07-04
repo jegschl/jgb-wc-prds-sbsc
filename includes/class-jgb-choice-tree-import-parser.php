@@ -110,7 +110,7 @@ class JGBWPSChoiceTreeImportParser{
         }
     }
 
-        private function set_columns_storer_by_type_hooks(){
+    private function set_columns_storer_by_type_hooks(){
         
         $hooks_array = [
             
@@ -125,6 +125,33 @@ class JGBWPSChoiceTreeImportParser{
 
         foreach( $hooks_array as $hook_sufix => $hcb ){
             add_filter('JGB/wpsbsc/store_column_data/type_' . $hook_sufix, $hcb['callback'], $hcb['priority'], 2 );
+        }
+    }
+
+    private function set_additional_selection_field_type_hooks(){
+        $hooks_array = [
+            'CHECK' => [
+                'callback' => [$this,'process_additional_selection_options_type_check'],
+                'priority' => 30
+            ],
+            'RADIO' => [
+                'callback' => [$this,'process_additional_selection_options_type_radio'],
+                'priority' => 30
+            ],
+            'SELECT' => [
+                'callback' => [$this,'process_additional_selection_options_type_select'],
+                'priority' => 30
+            ],
+            'TEXT' => [
+                'callback' => [$this,'process_additional_selection_options_type_text'],
+                'priority' => 30
+            ]
+        ];
+
+        $hooks_array = apply_filters( 'jgb/wpsbsc/import/additional_selection_field_type_hooks', $hooks_array );
+
+        foreach( $hooks_array as $hook_sufix => $hcb ){
+            add_filter('JGB/wpsbsc/choice_tree_import_item/type_' . $hook_sufix . '_options', $hcb['callback'], $hcb['priority'], 2 );
         }
     }
 
@@ -871,11 +898,15 @@ class JGBWPSChoiceTreeImportParser{
 
                 foreach( $vcs as $sc ){
 
-                    $choicesCombinationId = $this->sd_fv_parents_path_for_items( $sc['values-slugs-combinations'] );
-                    
-                    $vcsItemsIdsAndType = $this->sd_vcs_items_data( $sc['items'], $choicesCombinationId );
-                    
-                    $this->sd_vcs_items_link( $vcsItemsIdsAndType, $choicesCombinationId );
+                    foreach( $sc as $cci => $vcsItems ){
+
+                        
+                        $choicesCombinationId = $this->sd_fv_parent_path_for_items( $cci );
+
+                        $vcsItemsIdsAndType = $this->sd_vcs_items_data( $vcsItems['items'], $choicesCombinationId );
+                        
+                        $this->sd_vcs_items_link( $vcsItemsIdsAndType, $choicesCombinationId, $k );
+                    }
 
                 }
                 
@@ -885,7 +916,7 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function sd_vcs_items_link( Array $viiat, $cci ){
+    private function sd_vcs_items_link( Array $viiat, $cci, $vcsSlug ){
 
         global $wpdb;
 
@@ -898,10 +929,11 @@ class JGBWPSChoiceTreeImportParser{
             if( $wpdb->insert( 
                     "{$pfx}jgb_wpsbsc_vcs_items",
                     [ 
-                        'id_choice_combination' => $cci,
-                        'item_type'             => $itm['item_type'],
+                        'post_id'               => $this->postId,
                         'id_item'               => $itm['id'],
-                        'data_type'             => $itm['data_type'],
+                        'id_choice_combination' => $cci,
+                        'id_vcs'                => $vcsSlug,
+                        'item_type'             => $itm['item_type'],
                         'slug'                  => $itm['slug'],
                         'label'                 => $itm['label']    
                     ]
@@ -920,33 +952,18 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function sd_fv_parents_path_for_items( Array $slugs ){
+    private function sd_fv_parent_path_for_items( $fvparentpath ){
 
         global $wpdb;
 
         $pfx = $wpdb->prefix;
 
-        $slugsString = '';
+        $tbl_nm = "{$pfx}jgb_wpsbsc_choices_combinations";
 
-        foreach( $slugs as $k => $slug ){
-            
-            $query  = "SELECT * FROM {$pfx}jgb_wpsbsc_choices_availables ";
-            $query .= "WHERE selectable_value_slug = \"$slug\"";
+        
 
-            $row = $wpdb->get_row( $query, ARRAY_A );
-
-            if( is_array( $row ) && count( $row ) > 0 ){
-
-                $slugsString .= $k > 0 ? ':' : '';
-
-                $slugsString .= $row['id'];
-
-            }
-
-        }
-
-        $query  = "SELECT * FROM {$pfx}jgb_wpsbsc_choices_combinations ";
-        $query .= "WHERE vls_ids_combinations_string = \"$slugsString\"";
+        $query  = "SELECT * FROM $tbl_nm ";
+        $query .= "WHERE vls_ids_combinations_string = \"$fvparentpath\"";
 
         $row = $wpdb->get_row( $query, ARRAY_A );
 
@@ -957,10 +974,10 @@ class JGBWPSChoiceTreeImportParser{
         } else {
 
             if( $wpdb->insert(
-                    "{$pfx}jgb_wpsbsc_choices_combinations",
+                    $tbl_nm,
                     [
                         'post_id'                     => $this->postId,
-                        'vls_ids_combinations_string' => $slugsString 
+                        'vls_ids_combinations_string' => $fvparentpath 
                     ]
                 )
             ){
@@ -975,7 +992,21 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function sd_vcs_items_data( $itms, $cci ){
+    private function process_additional_selection_options( $itemDataField ){
+
+        $optionString = '';
+
+        $optionString = apply_filters(
+                            'JGB/wpsbsc/choice_tree_import_item/type_'. $itemDataField['field_type'] . '_options', 
+                            $itemDataField['value'], 
+                            $itemDataField  
+                        );
+
+        return $optionString;
+
+    }
+
+    private function sd_vcs_items_data( Array &$itms, $cci ){
 
         global $wpdb;
 
@@ -983,20 +1014,38 @@ class JGBWPSChoiceTreeImportParser{
 
         $viiat = [];
 
-        foreach( $itms as $k => $itm ){
+        foreach( $itms as $k => &$itm ){
 
             $tbl  = "{$pfx}jgb_wpsbsc_items_";
-            $tbl .= $itm['item_type'] == 'DATA' ? "data" : "field";
+
+            $dt = [];
+
+            switch( $itm['item_type'] ){
+                case 'DATA':
+                    $tbl .= "data";
+                    $dt = [
+                        'type'  => $itm['data_type'],
+                        'value' => $itm['value']
+                    ];
+                    break;
+
+                case 'FIELD':
+                    $tbl .= "field";
+                    $dt = [
+                        'type'  => $itm['field_type'],
+                        'options' => $this->process_additional_selection_options( $itm )
+                    ];
+                    break;
+
+                }
 
             if( $wpdb->insert( 
                     $tbl,
-                    [ 
-                        'value'     => $itm['value']
-                    ]
+                    $dt
                 )
             ){
 
-                $itm['id'] = $wpdb->insert_id;
+                $itm['itm_dof_stored_id'] = $wpdb->insert_id;
 
             }
 
@@ -1006,6 +1055,32 @@ class JGBWPSChoiceTreeImportParser{
 
         return $viiat;
 
+    }
+
+    public function process_additional_selection_options_type_radio( $value, $itemDataField ){
+        $raw_options = explode(',',$value);
+        $tmp_structured_option = [];
+        $strctured_opts = [];
+
+        foreach( $raw_options as $v ){
+            $tmp_structured_option['slug'] = sanitize_title( trim( $v ) );
+            $tmp_structured_option['label'] = trim( $v );
+            $strctured_opts[] = $tmp_structured_option;
+        }
+
+        return json_encode( $strctured_opts );
+    }
+
+    public function process_additional_selection_options_type_check( $value, $itemDataField ){
+        return $value;
+    }
+    
+    public function process_additional_selection_options_type_select( $value, $itemDataField ){
+        return $value;
+    }
+    
+    public function process_additional_selection_options_type_text( $value, $itemDataField ){
+        return $value;
     }
 
 }
