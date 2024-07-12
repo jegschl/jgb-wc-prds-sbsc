@@ -51,102 +51,72 @@ class SBSCDefPTShortCode{
 
         $r = [];
 
-        $sql  = "SELECT * FROM {$tblpn}_fields ";
+        $tblnm = $tblpn . '_fields';
+        $sql  = "SELECT * FROM {$tblnm} ";
         $sql .= "WHERE post_id = %d ";
 
         $fields = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
         $r['fields'] = $fields;
         
-        $sql  = "SELECT * FROM {$tblpn}_choices_availables ";
+        $tblnm = $tblpn . '_choices_availables';
+        $sql  = "SELECT * FROM {$tblnm} ";
         $sql .= "WHERE post_id = %d ";
 
         $choices_availables = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
         $r['choices_availables'] = $choices_availables;
 
-        $choices_combinations = [];
-        $ta = [];
-        foreach( $choices_availables as $ca ){
-            $sql  = "SELECT * FROM {$tblpn}_choices_combinations ";
-            $sql .= "WHERE vls_ids_combinations_string LIKE \"%{$ca['id']}%\" ";
-            
-            foreach( $wpdb->get_results( $sql, ARRAY_A ) as $sc ){
-            
-                if( !in_array( $sc['id'], $ta) ){
-            
-                    $choices_combinations[] = $sc;
-            
-                    $ta[] = $sc['id'];  
-            
-                }
-            
-            }
-                
-        }
+       
+        
+       
+        $tblnm = $tblpn . '_choices_combinations';
+        
+        $sql  = "SELECT * FROM {$tblnm} ";
+        
+        $sql .= "WHERE post_id = %d ";
+        
+        $r['choices_combinations'] = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
-
-        $r['choices_combinations'] = $choices_combinations;
-
-        $ccs = '';
-        $i = 0;
-        foreach( $choices_combinations as $cc ){
-            
-            if( $i > 0 ){
-            
-                $ccs .= ',';
-            
-            }
-            
-            $ccs .= $cc['id'];
-            
-            $i++;
-
-        }
-
+        
         $vcs_items = [];
 
-        if( !empty( $ccs ) ){
-            
-            $sql = "SELECT * FROM {$tblpn}_vcs_items ";
-            $sql .= "WHERE id_choice_combination IN ({$ccs}) ";
+        $tblnm = $tblpn . '_vcs_items';
+        $sql = "SELECT * FROM $tblnm ";
+        $sql .= "WHERE post_id = %d ";
 
-            $vcs_items = $wpdb->get_results( $sql, ARRAY_A );
-
-        }
+        $vcs_items = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
         $r['vcs_items'] = $vcs_items;
 
-        $items_data = [];  
-        $items_field = []; 
-        if( count( $vcs_items ) > 0 ){
 
-            $sql = "SELECT * FROM {$tblpn}_vcs_items vi ";
+        $tblnm = $tblpn . '_vcs_items';
 
-            $sql .= "JOIN {$tblpn}_items_data itd ON itd.id = vi.id_item ";
+        $tblItmData = $tblpn . '_items_data';
 
-            $sql .= "WHERE id_choice_combination IN ({$ccs}) ";
+        $sql = "SELECT itd.* FROM $tblnm vi ";
 
-            $sql .= "AND item_type = 'DATA'";
+        $sql .= "JOIN $tblItmData itd ON itd.id = vi.id_item ";
 
-            $items_data = $wpdb->get_results( $sql, ARRAY_A );
+        $sql .= "WHERE vi.post_id = %d ";
+
+        $sql .= "AND item_type = 'DATA'";
+
+        $r['items_data'] = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
 
-            $sql = "SELECT * FROM {$tblpn}_vcs_items vi ";
+        $tblItmFld = $tblpn . '_items_field';
 
-            $sql .= "JOIN {$tblpn}_items_data itd ON itd.id = vi.id_item ";
+        $sql = "SELECT itf.* FROM $tblnm vi ";
 
-            $sql .= "WHERE id_choice_combination IN ({$ccs}) ";
-            
-            $sql .= "AND item_type = 'FIELD'";
+        $sql .= "JOIN $tblItmFld itf ON itf.id = vi.id_item ";
 
-            $items_field = $wpdb->get_results( $sql, ARRAY_A );
+        $sql .= "WHERE vi.post_id = %d ";
+        
+        $sql .= "AND vi.item_type = 'FIELD'";
 
-        }
+        $r['items_field'] = $wpdb->get_results( $wpdb->prepare( $sql, $post_id ), ARRAY_A );
 
-        $r['items_data'] = $items_data;
-
-        $r['items_field'] = $items_field;
 
         return $r;
 
