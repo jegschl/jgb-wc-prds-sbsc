@@ -165,6 +165,8 @@ class JGBWPSChoiceTreeImportParser{
 
         $this->set_columns_storer_by_type_hooks();
 
+        $this->set_additional_selection_field_type_hooks();
+
         $this->valuesCombinationSets = [];
     }
 
@@ -737,42 +739,8 @@ class JGBWPSChoiceTreeImportParser{
         
         $pfx = $wpdb->prefix;
 
-        
+        $postId = $this->postId;
 
-        /* Buscar Ids de choices_availables relacionados con el postid actual. COn
-           esto tenemos todos la lista de registros de IDs de choices_availables que
-           se deben eliminar. */
-
-        $q  = "SELECT id FROM {$pfx}jgb_wpsbsc_choices_availables ";
-        $q .= "WHERE post_id = {$this->postId}";
-
-        $choices_availables_ids = $wpdb->get_col( $q );
-
-
-
-        /* Con la lista de IDs de choices_availables se puede obtener la lista de 
-           choices_combinations que ya no se usarán */
-        
-        $choices_combinations_ids = [];
-        
-        foreach( $choices_availables_ids as $caid ){
-
-            $q  = "SELECT id FROM {$pfx}jgb_wpsbsc_choices_combinations ";
-            $q .= "WHERE vls_ids_combinations_string LIKE \"%{$caid}%\"";
-
-            $tawCCI = $wpdb->get_col( $q );
-
-            foreach( $tawCCI as $t ){
-
-                if( !in_array( $t, $choices_combinations_ids ) ){
-                    
-                    $choices_combinations_ids[] = $t;
-
-                }
-
-            }
-
-        }
 
         /* Con la lista de choices_combinations que no se utilizarán se pueden obtener
            la lista de items de la tabla vcs_items según su tipo (DATA o FIELD) que ya 
@@ -781,22 +749,19 @@ class JGBWPSChoiceTreeImportParser{
         $items_DATA_ids  = [];
         $items_FIELD_ids = [];
 
-        foreach( $choices_combinations_ids as $cci ){
+        $q  = "SELECT id, id_item, item_type FROM {$pfx}jgb_wpsbsc_vcs_items ";
+        $q .= "WHERE post_id = $postId";
 
-            $q  = "SELECT id, id_item, item_type FROM {$pfx}jgb_wpsbsc_vcs_items ";
-            $q .= "WHERE id_choice_combination = $cci";
+        foreach( $wpdb->get_results( $q, ARRAY_A ) as $itm ){
 
-            foreach( $wpdb->get_results( $q, ARRAY_A ) as $itm ){
+            $vcs_items_ids[] = $itm['id'];
 
-                $vcs_items_ids[] = $itm['id'];
+            if( empty( $itm['item_type'] ) || ( $itm['item_type'] == 'DATA' ) ){
+                $items_DATA_ids[] = $itm['id_item'];
+            }
 
-                if( empty( $itm['item_type'] ) || ( $itm['item_type'] == 'DATA' ) ){
-                    $items_DATA_ids[] = $itm['id_item'];
-                }
-
-                if( $itm['item_type'] == 'FIELD' ){
-                    $items_FIELD_ids[] = $itm['id_item'];
-                }
+            if( $itm['item_type'] == 'FIELD' ){
+                $items_FIELD_ids[] = $itm['id_item'];
             }
         }
 
@@ -805,7 +770,8 @@ class JGBWPSChoiceTreeImportParser{
         $i = 0;
         foreach( $items_FIELD_ids as $id ){
             $itrs .= $i > 0 ? ',' : '';
-            $itrs .= $id;        
+            $itrs .= $id;
+            $i++;
         }
         if( !empty( $itrs ) ){
             $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_field ";
@@ -818,7 +784,8 @@ class JGBWPSChoiceTreeImportParser{
         $i = 0;
         foreach( $items_DATA_ids as $id ){
             $itrs .= $i > 0 ? ',' : '';
-            $itrs .= $id;        
+            $itrs .= $id;
+            $i++;     
         }
         if( !empty( $itrs ) ){
             $q  = "DELETE FROM {$pfx}jgb_wpsbsc_items_data ";
@@ -831,7 +798,8 @@ class JGBWPSChoiceTreeImportParser{
         $i = 0;
         foreach( $vcs_items_ids as $id ){
             $itrs .= $i > 0 ? ',' : '';
-            $itrs .= $id;        
+            $itrs .= $id;
+            $i++;
         }
         if( !empty( $itrs ) ){
             $q  = "DELETE FROM {$pfx}jgb_wpsbsc_vcs_items ";
@@ -848,10 +816,23 @@ class JGBWPSChoiceTreeImportParser{
 
         /* Eliminar todos los registros choices_combinatios que contengan en la cadena 
            de IDs de choices el id de algún choices available. */
+        // Deleting fields.
+        $wpdb->delete(
+            "{$pfx}jgb_wpsbsc_choices_combinations",
+            ['post_id' => $this->postId ],
+            ['%d']
+        );
         
         // Deleting fields.
         $wpdb->delete(
             "{$pfx}jgb_wpsbsc_fields",
+            ['post_id' => $this->postId ],
+            ['%d']
+        );
+
+        /* Eliminar registros de vls_cmbs_sets */
+        $wpdb->delete(
+            "{$pfx}jgb_wpsbsc_vls_cmbs_sets",
             ['post_id' => $this->postId ],
             ['%d']
         );
@@ -905,7 +886,8 @@ class JGBWPSChoiceTreeImportParser{
 
                         $vcsItemsIdsAndType = $this->sd_vcs_items_data( $vcsItems['items'], $choicesCombinationId );
                         
-                        $this->sd_vcs_items_link( $vcsItemsIdsAndType, $choicesCombinationId, $k );
+                        $this->sd_vcs_items_link( $vcsItemsIdsAndType, $choicesCombinationId, $vcsId );
+
                     }
 
                 }
@@ -916,7 +898,7 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    private function sd_vcs_items_link( Array $viiat, $cci, $vcsSlug ){
+    private function sd_vcs_items_link( Array $viiat, $cci, $vcsId ){
 
         global $wpdb;
 
@@ -930,12 +912,12 @@ class JGBWPSChoiceTreeImportParser{
                     "{$pfx}jgb_wpsbsc_vcs_items",
                     [ 
                         'post_id'               => $this->postId,
-                        'id_item'               => $itm['id'],
+                        'id_item'               => $itm['itm_dof_stored_id'],
                         'id_choice_combination' => $cci,
-                        'id_vcs'                => $vcsSlug,
+                        'id_vcs'                => $vcsId,
                         'item_type'             => $itm['item_type'],
                         'slug'                  => $itm['slug'],
-                        'label'                 => $itm['label']    
+                        'label'                 => $itm['label']
                     ]
                 )
             ){
@@ -998,7 +980,7 @@ class JGBWPSChoiceTreeImportParser{
 
         $optionString = apply_filters(
                             'JGB/wpsbsc/choice_tree_import_item/type_'. $itemDataField['field_type'] . '_options', 
-                            $itemDataField['value'], 
+                            $itemDataField['options'], 
                             $itemDataField  
                         );
 
@@ -1057,18 +1039,80 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
-    public function process_additional_selection_options_type_radio( $value, $itemDataField ){
-        $raw_options = explode(',',$value);
-        $tmp_structured_option = [];
-        $strctured_opts = [];
-
-        foreach( $raw_options as $v ){
-            $tmp_structured_option['slug'] = sanitize_title( trim( $v ) );
-            $tmp_structured_option['label'] = trim( $v );
-            $strctured_opts[] = $tmp_structured_option;
+    private function verify_slug_key_in_array( $slug, $elementSlugKey, $a ){
+        if( !is_array( $a ) ){
+            return false;
         }
 
-        return json_encode( $strctured_opts );
+        if( count( $a ) < 1 ){
+            return $slug;
+        }
+
+        $i = 0;
+        $slugAlreadyExists = false;
+        $iSlug = '';
+        $slugExpldd = [];
+
+        do {
+            $slugAlreadyExists = false;
+            foreach( $a as $v ){
+
+                if( !isset( $v[ $elementSlugKey ] ) ){
+                    continue;
+                }
+
+                $slugExpldd = explode('-', $v[ $elementSlugKey ] );
+
+                if( count( $slugExpldd ) == 1 ){
+                    $iSlug = $slugExpldd[0];
+                    if( $iSlug == $slug ){
+                        $slugAlreadyExists = true;
+                        $i++;
+                        $slug = $iSlug . '-' . $i;
+                        break;
+                    }
+                }
+
+                if( count( $slugExpldd ) == 2 ){
+                    $iSlug  = $slugExpldd[0];
+
+                    if( $v[ $elementSlugKey ] == $iSlug . '-' . $i ){
+                        $slugAlreadyExists = true;
+                        $i++;
+                        $slug = $iSlug . '-' . $i;
+                        break;
+                    }
+                }
+                
+            }
+        } while( $slugAlreadyExists );
+        
+        return $slug;   
+
+    }
+
+    public function process_additional_selection_options_type_radio( $value, $itemDataField ){
+
+        $raw_options = explode(',',$value);
+
+        $tmp_structured_option = [];
+        
+        $strctured_opts = [];
+
+
+        foreach( $raw_options as $v ){
+
+            $nSlug = sanitize_title( trim( $v ) );
+
+            $tmp_structured_option['slug'] = $this->verify_slug_key_in_array( $nSlug, 'slug', $strctured_opts );
+
+            $tmp_structured_option['label'] = trim( $v );
+
+            $strctured_opts[] = $tmp_structured_option;
+
+        }
+
+        return json_encode( ['selection-options' => $strctured_opts] );
     }
 
     public function process_additional_selection_options_type_check( $value, $itemDataField ){
