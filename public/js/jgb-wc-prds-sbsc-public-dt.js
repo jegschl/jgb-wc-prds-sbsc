@@ -114,7 +114,7 @@ function get_first_field_to_render(){
 	
 	return r;
 }
-
+// deprecated
 function asemblyParentFVPathUntil( parentFfieldId ){
 	let i;
 	let rs = '';
@@ -137,13 +137,14 @@ function asemblyParentFVPathUntil( parentFfieldId ){
 	
 	return rs;
 }
+// Until here deprecated
 
-function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
+function get_next_fields_to_render( parentFVPath ){
 
-	const parentsFVPath = asemblyParentFVPathUntil( parentFfieldId );
+	/* const parentsFVPath = asemblyParentFVPathUntil( parentFVPath ); */
 	
 	//const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
-	const q = {parents_fv_path:parentsFVPath.toString()}; 
+	const q = {parents_fv_path:parentFVPath.toString()}; 
 
 	let r = [];
 
@@ -196,11 +197,36 @@ function get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected ){
 
 }
 
-function renderStep( parentFfieldId, parentFieldvalueSelected ){
+function currentParentFVPath(){
+
+	let i;	
+	let rs = '';
+
+	for(i=0; i<selectedFeatures.length; i++){
+		
+		if( selectedFeatures[i].valueRegId != null ){
+			rs += i > 0 ? ',' : '';
+			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
+		} else {
+			break;
+		}
+	}
+
+	return rs;
+
+}
+
+function renderStep(){
 
 	let incrmtr;
 
-	if( parentFfieldId == undefined && parentFieldvalueSelected == undefined ){
+	if( selectedFeatures[0].value == null ){
+		parentFVPath = '';
+	} else {
+		parentFVPath = currentParentFVPath();
+	}
+
+	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
 		incrmtr = 1;
 	} else {
 		incrmtr = 2;
@@ -212,10 +238,10 @@ function renderStep( parentFfieldId, parentFieldvalueSelected ){
 
 	let templatesToRender = [];
 
-	if( parentFfieldId == undefined && parentFieldvalueSelected == undefined ){
+	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
 		fieldsToRender = get_first_field_to_render();
 	} else {
-		fieldsToRender = get_next_fields_to_render( parentFfieldId, parentFieldvalueSelected );
+		fieldsToRender = get_next_fields_to_render( parentFVPath );
 	}
 
 	const stepFieldsTobeRendered = {
@@ -273,13 +299,13 @@ function renderFirstStep(){
 
 }
 
-function renderNextStep( fieldId, valueSelected ){
+function renderNextStep(){
 
 	const actSldr = swiper.activeIndex + 1;
 
 	removeSlidesFrom( actSldr );
 
-	renderStep( fieldId, valueSelected );
+	renderStep();
 
 }
 
@@ -378,7 +404,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
 			desplegarSFs();
 			desplegarPrice();
-			renderNextStep( fieldId, valueSelected );
+			renderNextStep();
 			//checkButtonsNavigationStatus();
 			swiper.slideNext(speed);
 		});
