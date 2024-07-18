@@ -94,9 +94,10 @@ function get_first_field_to_render(){
 
 	const options = []; 
 	
-	dtChoicesAvailables({parent_field_id:null,parent_on_browser_selected_slug_value:null}).each(function(record){
+	dtChoicesAvailables({parents_fv_path:null}).each(function(record){
 		
 		const choice = {
+			id: record['id'],
 			slug: record['selectable_value_slug'], 
 			label: record['selectable_value_label']
 		}; 
@@ -159,6 +160,7 @@ function get_next_fields_to_render( parentFVPath ){
 		let fieldOptionsUpdated = false;
 
 		const currentFieldOption = {
+			id: record['id'],
 			slug: record['selectable_value_slug'],
 			label: record['selectable_value_label']
 		};

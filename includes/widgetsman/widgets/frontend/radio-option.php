@@ -2,7 +2,7 @@
 
 
 $opt = $args['option'];
-$k   = $args['key'];
+//$k   = $args['key'];
 
 ?>
 

@@ -48,6 +48,8 @@ class JGBWPSChoiceTreeImportParser{
     protected $parentFVPathForItemsInProcess;
 
     protected $parentFVPathForItemsToKeepStored;
+
+    private $slugsGertnKeyCache = [];
     
     function __construct( $data = null )
     {
@@ -340,6 +342,22 @@ class JGBWPSChoiceTreeImportParser{
             return $r['id'];
         }
 
+        if( ! isset( $this->slugsGertnKeyCache[$tbl_nm] ) ){
+            $this->slugsGertnKeyCache[$tbl_nm] = [];
+        }
+
+        if( ! isset( $this->slugsGertnKeyCache[$tbl_nm][ $fld['slug'] ] ) ){
+            $this->slugsGertnKeyCache[$tbl_nm][ $fld['slug'] ] = 0;
+        }
+
+        $slg_inspect = $this->generate_unique_unexistent_slug( $fld['slug'], $tbl_nm, $this->slugsGertnKeyCache[$tbl_nm][ $fld['slug'] ] );
+
+        if( !is_null( $slg_inspect['err'] ) ){
+            return null;
+        } else {
+            $fld['slug'] = $slg_inspect['slug'];
+        }
+
         $data = [
             'post_id'           => $postId,
             'slug'              => $fld['slug'],
@@ -369,6 +387,48 @@ class JGBWPSChoiceTreeImportParser{
 
     }
 
+    private function generate_unique_unexistent_slug( $slug, $table, &$keyCache = null, $field = 'slug'){
+        global $wpdb;
+
+        if( $keyCache != null ){
+            $i = $keyCache;
+        } else {
+            $i = 0;
+        }
+
+        $sql = "SELECT COUNT(*) FROM $table WHERE $field = '$slug'";
+
+        $qr = $wpdb->get_var( $sql );
+
+        while( $qr > 0 ){
+
+            $i++;
+            
+            $sql = "SELECT COUNT(*) FROM $table WHERE $field = '{$slug}-$i'";
+
+            $qr = $wpdb->get_var( $sql );
+
+        }
+
+        $r = [];
+
+        if( empty( $wpdb->error_get_last ) ){
+            $keyCache = $i; 
+            $r['err'] = null;
+            $r['slug'] = $i > 0 ? $slug . "-$i" : $slug;
+
+        } else {
+            $r['err'] = [
+                'code' => $wpdb->error_get_last()['code'],
+                'message' => $wpdb->error_get_last()['message']
+            ];
+
+            $r['slug'] = $slug;
+        }
+
+        return $r;
+    }
+
     function sd_available_value( &$nv, $field_id, $parent_field_id  ){
             
         global $wpdb;
@@ -377,19 +437,35 @@ class JGBWPSChoiceTreeImportParser{
 
         $table_nm = "{$pfx}jgb_wpsbsc_choices_availables";
 
+        if( ! isset( $this->slugsGertnKeyCache[$table_nm] ) ){
+            $this->slugsGertnKeyCache[$table_nm] = 0;
+        }
+
+        if( ! isset( $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] ) ){
+            $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] = 0;
+        }
+
+        $slg_inspect = $this->generate_unique_unexistent_slug( $nv['slug'], $table_nm, $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ], 'selectable_value_slug' );
+
+        if( !is_null( $slg_inspect['err'] ) ){
+            return null;
+        } else {
+            $nv['slug'] = $slg_inspect['slug'];
+        }
+
         $data = [
             'post_id'  => $this->postId,
             'field_id' => $field_id,
             'selectable_value_slug' => $nv['slug'],
-            'selectable_value_label'=> $nv['label'],
+            'selectable_value_label'=> trim( $nv['label'] ),
             'parent_field_id' => $parent_field_id,
             'parent_on_browser_selected_slug_value' => $nv['parent']['value_slug'],
             'parents_fv_path' => $nv['parents_fv_path']
         ];
 
         if( $wpdb->insert(
-            $table_nm,
-            $data
+                $table_nm,
+                $data
             ) 
         ){
             $nv['stored_id'] = $wpdb->insert_id;
