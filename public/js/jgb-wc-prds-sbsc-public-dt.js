@@ -244,14 +244,7 @@ function renderStep(){
 		fieldsToRender = get_first_field_to_render();
 	} else {
 		fieldsToRender = get_next_fields_to_render( parentFVPath );
-	}
-
-	const stepFieldsTobeRendered = {
-		'stepIndex': swiper.activeIndex,
-		'fields': fieldsToRender
-	};
-
-	
+	}	
 
 	let ts = JGB_WPSBSC_DATA['beginStepWraperTpl'].replace("{{step_index}}",step.toString());
 
