@@ -145,13 +145,19 @@ function get_next_fields_to_render( parentFVPath ){
 	/* const parentsFVPath = asemblyParentFVPathUntil( parentFVPath ); */
 	
 	//const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
-	const q = {parents_fv_path:parentFVPath.toString()}; 
+	let q = {vls_ids_combinations_string:parentFVPath.toString()}; 
 
 	let r = [];
 
 	let fieldsToRender = [];
 
 	let i = 0;
+
+	/* dtChoicesCombinations(q).each(function(record){
+
+	}); */
+
+	q = {parents_fv_path:parentFVPath.toString()};
 	
 	dtChoicesAvailables(q).each(function(record){
 
@@ -218,33 +224,9 @@ function currentParentFVPath(){
 
 }
 
-function renderStep(){
+function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 
-	let incrmtr;
-
-	if( selectedFeatures[0].value == null ){
-		parentFVPath = '';
-	} else {
-		parentFVPath = currentParentFVPath();
-	}
-
-	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
-		incrmtr = 1;
-	} else {
-		incrmtr = 2;
-	}
-
-	const step = swiper.activeIndex + incrmtr;
-
-	let fieldsToRender = [];
-
-	let templatesToRender = [];
-
-	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
-		fieldsToRender = get_first_field_to_render();
-	} else {
-		fieldsToRender = get_next_fields_to_render( parentFVPath );
-	}	
+	let templatesToRender = [];	
 
 	let ts = JGB_WPSBSC_DATA['beginStepWraperTpl'].replace("{{step_index}}",step.toString());
 
@@ -279,6 +261,45 @@ function renderStep(){
 	
 		
 	templatesToRender.push( JGB_WPSBSC_DATA['endStepWraperTpl'] );
+
+	return templatesToRender;
+
+}
+
+function getFieldsToRender( parentFVPath = '' ){
+	
+	let fieldsToRender = [];
+
+	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
+		fieldsToRender = get_first_field_to_render();
+	} else {
+		fieldsToRender = get_next_fields_to_render( parentFVPath );
+	}	
+
+	return fieldsToRender;
+}
+
+function renderStep(){
+
+	if( selectedFeatures[0].value == null ){
+		parentFVPath = '';
+	} else {
+		parentFVPath = currentParentFVPath();
+	}
+
+	let incrmtr;
+
+	let fieldsToRender = [];
+
+	let templatesToRender = [];
+
+	fieldsToRender = getFieldsToRender( parentFVPath );
+
+	incrmtr = ( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ) ? 1 : 2;
+
+	let step = swiper.activeIndex + incrmtr;
+
+	templatesToRender = prepareTemplatesToRenderForFields( fieldsToRender, step );
 
 	swiper.appendSlide( templatesToRender.join("\n") );
 
