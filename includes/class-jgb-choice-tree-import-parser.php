@@ -429,6 +429,30 @@ class JGBWPSChoiceTreeImportParser{
         return $r;
     }
 
+    function get_choice_value_match_in_fv_tree_branch( $base_slug ){
+        global $wpdb;
+
+        $r = null;
+
+        $pfx = $wpdb->prefix;
+        $table_nm = "{$pfx}jgb_wpsbsc_choices_availables";
+
+        $query = "SELECT id, selectable_value_slug as slug, selectable_value_label as label FROM $table_nm ";
+        $query .= "WHERE post_id = {$this->postId} ";
+        $query .= "AND parents_fv_path = '{$this->parentFVPath}' ";
+        $query .= "AND selectable_value_slug REGEXP '^{$base_slug}(-[1-9][0-9]*)?$'";
+
+        $rows = $wpdb->get_results( $query, ARRAY_A );
+
+        if( count( $rows ) > 0 ){
+
+            $r = $rows[0];
+
+        }
+
+        return $r;
+    }
+
     function sd_available_value( &$nv, $field_id, $parent_field_id  ){
             
         global $wpdb;
@@ -437,41 +461,54 @@ class JGBWPSChoiceTreeImportParser{
 
         $table_nm = "{$pfx}jgb_wpsbsc_choices_availables";
 
-        if( ! isset( $this->slugsGertnKeyCache[$table_nm] ) ){
-            $this->slugsGertnKeyCache[$table_nm] = 0;
-        }
+        $previous_parents_fv_path_checking = $this->get_choice_value_match_in_fv_tree_branch( $nv['slug'] );
 
-        if( ! isset( $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] ) ){
-            $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] = 0;
-        }
+        if( !is_null( $previous_parents_fv_path_checking ) ){
+            
+            $nv['stored_id'] = $previous_parents_fv_path_checking['id'];
+            
+            $nv['slug'] = $previous_parents_fv_path_checking['slug'];
 
-        $slg_inspect = $this->generate_unique_unexistent_slug( $nv['slug'], $table_nm, $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ], 'selectable_value_slug' );
-
-        if( !is_null( $slg_inspect['err'] ) ){
-            return null;
         } else {
-            $nv['slug'] = $slg_inspect['slug'];
+
+            if( ! isset( $this->slugsGertnKeyCache[$table_nm] ) ){
+                $this->slugsGertnKeyCache[$table_nm] = 0;
+            }
+    
+            if( ! isset( $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] ) ){
+                $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] = 0;
+            }
+    
+            $slg_inspect = $this->generate_unique_unexistent_slug( $nv['slug'], $table_nm, $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ], 'selectable_value_slug' );
+    
+            if( !is_null( $slg_inspect['err'] ) ){
+                return null;
+            } else {
+                $nv['slug'] = $slg_inspect['slug'];
+            }
+    
+            $data = [
+                'post_id'  => $this->postId,
+                'field_id' => $field_id,
+                'selectable_value_slug' => $nv['slug'],
+                'selectable_value_label'=> trim( $nv['label'] ),
+                'parent_field_id' => $parent_field_id,
+                'parent_on_browser_selected_slug_value' => $nv['parent']['value_slug'],
+                'parents_fv_path' => $nv['parents_fv_path']
+            ];
+    
+            if( $wpdb->insert(
+                    $table_nm,
+                    $data
+                ) 
+            ){
+                $nv['stored_id'] = $wpdb->insert_id;
+            }
+
         }
 
-        $data = [
-            'post_id'  => $this->postId,
-            'field_id' => $field_id,
-            'selectable_value_slug' => $nv['slug'],
-            'selectable_value_label'=> trim( $nv['label'] ),
-            'parent_field_id' => $parent_field_id,
-            'parent_on_browser_selected_slug_value' => $nv['parent']['value_slug'],
-            'parents_fv_path' => $nv['parents_fv_path']
-        ];
+        return $nv['stored_id'];
 
-        if( $wpdb->insert(
-                $table_nm,
-                $data
-            ) 
-        ){
-            $nv['stored_id'] = $wpdb->insert_id;
-        }
-
-        return $wpdb->insert_id;
     }
 
     function process_dt_col_fld_lbl( $currentData, $data, $subParameter, $soc, $ctip ){
@@ -521,6 +558,11 @@ class JGBWPSChoiceTreeImportParser{
         if( $v['parent']['field_slug'] != $this->previousFieldSlugRoSNotMultiple ){
             return false;
         }
+        // test
+        if( $v['parents_fv_path'] != $this->parentFVPath ){
+            return false;
+        }
+        // until here test
 
         return true;
     }
