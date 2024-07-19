@@ -115,30 +115,6 @@ function get_first_field_to_render(){
 	
 	return r;
 }
-// deprecated
-function asemblyParentFVPathUntil( parentFfieldId ){
-	let i;
-	let rs = '';
-
-	for(i=0; i<selectedFeatures.length; i++){
-		rs += i > 0 ? ',' : '';
-		
-		if( selectedFeatures[i].fieldId == parentFfieldId ){
-			
-			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
-			
-			break;
-		
-		} else {
-		
-			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
-		
-		}
-	}
-	
-	return rs;
-}
-// Until here deprecated
 
 function get_next_fields_to_render( parentFVPath ){
 
