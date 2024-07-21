@@ -86,7 +86,7 @@ function getFieldsPriority(){
 	return r;
 }
 
-function get_first_field_to_render(){
+function get_first_item_to_render(){
 
 	const fieldsPriority = getFieldsPriority();
 
@@ -134,8 +134,13 @@ function get_additional_selection_items_to_render( parentFVPath ){
 		
 		dtVcsItems(q).each(function(recordVcsItem){
 
-			r[i] = { vcsItemId: recordVcsItem['id'].toString() };
-
+			r[i] = { 
+				vcsItemId: recordVcsItem['id'].toString(),
+				vcsItemSlug: recordVcsItem['slug'],
+				vcsItemLabel: recordVcsItem['label'],
+				priorityInStep: recordVcsItem['priority_in_step']
+			};
+			
 			const q = { id: recordVcsItem['id_item'].toString() };
 
 			dtItemsField(q).each(function(recordItemField){
@@ -155,7 +160,7 @@ function get_additional_selection_items_to_render( parentFVPath ){
 
 }
 
-function get_next_fields_to_render( parentFVPath ){
+function get_next_item_to_render( parentFVPath ){
 
 	/* const parentsFVPath = asemblyParentFVPathUntil( parentFVPath ); */
 	
@@ -170,7 +175,7 @@ function get_next_fields_to_render( parentFVPath ){
 
 	q = {parents_fv_path:parentFVPath.toString()};
 
-	let itemsToRender = get_additional_selection_items_to_render( parentFVPath );
+	let additionalSelectionItemsToRender = get_additional_selection_items_to_render( parentFVPath );
 	
 	dtChoicesAvailables(q).each(function(record){
 
@@ -181,7 +186,8 @@ function get_next_fields_to_render( parentFVPath ){
 		const currentFieldOption = {
 			id: record['id'],
 			slug: record['selectable_value_slug'],
-			label: record['selectable_value_label']
+			label: record['selectable_value_label'],
+			priorityInStep: record['priority_in_step']
 		};
 
 		for( i=0; i<r.length; i++ ){
@@ -286,9 +292,9 @@ function getFieldsToRender( parentFVPath = '' ){
 	let fieldsToRender = [];
 
 	if( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ){
-		fieldsToRender = get_first_field_to_render();
+		fieldsToRender = get_first_item_to_render();
 	} else {
-		fieldsToRender = get_next_fields_to_render( parentFVPath );
+		fieldsToRender = get_next_item_to_render( parentFVPath );
 	}	
 
 	return fieldsToRender;
