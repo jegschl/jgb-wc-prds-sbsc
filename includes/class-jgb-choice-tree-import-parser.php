@@ -1114,6 +1114,10 @@ class JGBWPSChoiceTreeImportParser{
 
         $viiat = [];
 
+        $q = '';
+        $qwc = '';
+        $itm_existance_checking_result = null;
+
         foreach( $itms as $k => &$itm ){
 
             $tbl  = "{$pfx}jgb_wpsbsc_items_";
@@ -1127,6 +1131,7 @@ class JGBWPSChoiceTreeImportParser{
                         'type'  => $itm['data_type'],
                         'value' => $itm['value']
                     ];
+                    $qwc = "value = '{$itm['value']}'";
                     break;
 
                 case 'FIELD':
@@ -1135,17 +1140,31 @@ class JGBWPSChoiceTreeImportParser{
                         'type'  => $itm['field_type'],
                         'options' => $this->process_additional_selection_options( $itm )
                     ];
+                    $jsnToStr = str_replace( ':', ': ', $dt['options'] );
+                    $jsnToStr = str_replace( ',', ', ', $jsnToStr );
+                    $qwc = "options = CAST('{$dt['options']}' AS JSON)";
                     break;
 
+            }
+
+            $q = "SELECT * FROM $tbl WHERE $qwc";
+            $itm_existance_checking_result = $wpdb->get_row( $q, ARRAY_A );
+
+            if( is_array( $itm_existance_checking_result ) && count( $itm_existance_checking_result ) > 0 ){
+
+                $itm['itm_dof_stored_id'] = $itm_existance_checking_result['id'];
+
+            } else {
+
+                if( $wpdb->insert( 
+                        $tbl,
+                        $dt
+                    )
+                ){
+
+                    $itm['itm_dof_stored_id'] = $wpdb->insert_id;
+
                 }
-
-            if( $wpdb->insert( 
-                    $tbl,
-                    $dt
-                )
-            ){
-
-                $itm['itm_dof_stored_id'] = $wpdb->insert_id;
 
             }
 
@@ -1230,7 +1249,7 @@ class JGBWPSChoiceTreeImportParser{
 
         }
 
-        return json_encode( ['selection-options' => $strctured_opts] );
+        return json_encode( ['selection-options' => $strctured_opts], JSON_UNESCAPED_UNICODE );
     }
 
     public function process_additional_selection_options_type_check( $value, $itemDataField ){
