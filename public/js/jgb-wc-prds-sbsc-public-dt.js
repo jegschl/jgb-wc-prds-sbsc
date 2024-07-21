@@ -116,12 +116,51 @@ function get_first_field_to_render(){
 	return r;
 }
 
+function get_additional_selection_items_to_render( parentFVPath ){
+	let q = { vls_ids_combinations_string:parentFVPath.toString() }; 
+
+	let r = [];
+
+	let fieldsItemsTypeAddSlctn = [];
+
+	let itemsToRender = [];
+
+	let i = 0;
+
+	dtChoicesCombinations(q).each(function(recordChCmb){
+		/* choicesCombinationsIds.push( recordChCmb['id'].toString() ); */
+
+		const q = { id_choice_combination: recordChCmb['id'].toString(), item_type: 'FIELD' };
+		
+		dtVcsItems(q).each(function(recordVcsItem){
+
+			r[i] = { vcsItemId: recordVcsItem['id'].toString() };
+
+			const q = { id: recordVcsItem['id_item'].toString() };
+
+			dtItemsField(q).each(function(recordItemField){
+
+				r[i].type = recordItemField['type'];
+				r[i].options = recordItemField['options'];
+
+			});
+
+			i++;
+
+		});
+
+	});
+
+	return r;
+
+}
+
 function get_next_fields_to_render( parentFVPath ){
 
 	/* const parentsFVPath = asemblyParentFVPathUntil( parentFVPath ); */
 	
 	//const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
-	let q = {vls_ids_combinations_string:parentFVPath.toString()}; 
+	let q;
 
 	let r = [];
 
@@ -129,11 +168,9 @@ function get_next_fields_to_render( parentFVPath ){
 
 	let i = 0;
 
-	/* dtChoicesCombinations(q).each(function(record){
-
-	}); */
-
 	q = {parents_fv_path:parentFVPath.toString()};
+
+	let itemsToRender = get_additional_selection_items_to_render( parentFVPath );
 	
 	dtChoicesAvailables(q).each(function(record){
 
@@ -163,7 +200,9 @@ function get_next_fields_to_render( parentFVPath ){
 		if( !fieldOptionsUpdated ){
 
 			r.push({
+				id: record['field_id'],
 				slug: fieldSlug,
+				type: 'field',
 				options: [ currentFieldOption ]
 			});
 
