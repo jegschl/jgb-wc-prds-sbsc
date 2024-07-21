@@ -749,7 +749,8 @@ class JGBWPSChoiceTreeImportParser{
             'label' => $currentFldData['label'],
             'item_type' => 'FIELD',
             'field_type' => $fieldType,
-            'options' => trim( $data )
+            'options' => trim( $data ),
+            'priority_in_step' => $currentFldData['priority_in_step']
         ];
 
         return $currentFldData;
@@ -1022,9 +1023,25 @@ class JGBWPSChoiceTreeImportParser{
 
         $pfx = $wpdb->prefix;
 
+        $tbl_nm = "{$pfx}jgb_wpsbsc_vcs_items";
+
         $rids = [];
 
         foreach( $viiat as $itm ){
+            
+            $q  = "SELECT * FROM $tbl_nm ";
+            $q .= "WHERE post_id = {$this->postId} ";
+            $q .= "AND id_choice_combination = $cci ";
+            $q .= "AND slug = \"{$itm['slug']}\"";
+
+            $r = $wpdb->get_row( $q, ARRAY_A );
+
+            if( is_array( $r ) && count( $r ) > 0 ){
+                $itm['link_id'] = $r['id'];
+                $itm['priority'] = $r['priority'];
+                $rids[] = $itm;
+                continue;
+            }
 
             if( $wpdb->insert( 
                     "{$pfx}jgb_wpsbsc_vcs_items",
@@ -1035,7 +1052,8 @@ class JGBWPSChoiceTreeImportParser{
                         'id_vcs'                => $vcsId,
                         'item_type'             => $itm['item_type'],
                         'slug'                  => $itm['slug'],
-                        'label'                 => $itm['label']
+                        'label'                 => $itm['label'],
+                        'priority_in_step'              => $itm['priority_in_step']
                     ]
                 )
             ){
