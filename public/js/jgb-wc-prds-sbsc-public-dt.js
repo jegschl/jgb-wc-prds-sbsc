@@ -116,7 +116,7 @@ function get_first_item_to_render(){
 	return r;
 }
 
-function get_additional_selection_items_to_render( parentFVPath ){
+function get_fields_to_render_type_vcsItem_field_subType_additional_selection( parentFVPath ){
 	let q = { vls_ids_combinations_string:parentFVPath.toString() }; 
 
 	let r = [];
@@ -136,17 +136,22 @@ function get_additional_selection_items_to_render( parentFVPath ){
 
 			r[i] = { 
 				vcsItemId: recordVcsItem['id'].toString(),
-				vcsItemSlug: recordVcsItem['slug'],
+				slug: recordVcsItem['slug'],
 				vcsItemLabel: recordVcsItem['label'],
-				priorityInStep: recordVcsItem['priority_in_step']
+				priorityInStep: parseInt( recordVcsItem['priority_in_step'] ),
+				type: 'field:additional-selection'
 			};
 			
 			const q = { id: recordVcsItem['id_item'].toString() };
 
 			dtItemsField(q).each(function(recordItemField){
 
-				r[i].type = recordItemField['type'];
-				r[i].options = recordItemField['options'];
+				r[i].subType = recordItemField['type'];
+				if( r[i].subType == 'RADIO' ){
+					r[i].options = JSON.parse( recordItemField['options'] )['selection-options'];
+				} else {
+					r[i].options = recordItemField['options'];
+				}
 
 			});
 
@@ -160,11 +165,7 @@ function get_additional_selection_items_to_render( parentFVPath ){
 
 }
 
-function get_next_item_to_render( parentFVPath ){
-
-	/* const parentsFVPath = asemblyParentFVPathUntil( parentFVPath ); */
-	
-	//const q = {parent_field_id:parentFfieldId.toString(), parent_on_browser_selected_slug_value:parentFieldvalueSelected.toString() }; 
+function get_fields_to_render( parentFVPath ){
 	let q;
 
 	let r = [];
@@ -175,8 +176,6 @@ function get_next_item_to_render( parentFVPath ){
 
 	q = {parents_fv_path:parentFVPath.toString()};
 
-	let additionalSelectionItemsToRender = get_additional_selection_items_to_render( parentFVPath );
-	
 	dtChoicesAvailables(q).each(function(record){
 
 		const fieldSlug = getFieldSlugById( record['field_id'] );
@@ -186,13 +185,14 @@ function get_next_item_to_render( parentFVPath ){
 		const currentFieldOption = {
 			id: record['id'],
 			slug: record['selectable_value_slug'],
-			label: record['selectable_value_label'],
-			priorityInStep: record['priority_in_step']
+			label: record['selectable_value_label']
 		};
 
 		for( i=0; i<r.length; i++ ){
 
 			if( r[i]['slug'] == fieldSlug ){
+
+				r[i]['priorityInStep'] = parseInt( dtFields({id:record['field_id']}).first()['priority_in_step'] );
 
 				r[i]['options'].push( currentFieldOption );
 
@@ -223,6 +223,36 @@ function get_next_item_to_render( parentFVPath ){
 	}
 
 	return fieldsToRender;
+}
+
+function get_next_item_to_render( parentFVPath ){
+
+	let max_priority = null;
+
+	const fieldsToRender = get_fields_to_render( parentFVPath );
+
+	fieldsToRender.forEach( (r)=>{
+		if( ( max_priority == null ) || ( r['priorityInStep'] < max_priority ) ){
+			max_priority = r['priorityInStep'];
+		}
+	} );
+
+	const additionalSelectionItemsToRender = get_fields_to_render_type_vcsItem_field_subType_additional_selection( parentFVPath );
+
+	additionalSelectionItemsToRender.forEach( (r)=>{
+		if( ( max_priority == null ) || ( r['priorityInStep'] < max_priority ) ){
+			max_priority = r['priorityInStep'];
+		}
+	} );
+
+	let itemsToRender = [];
+	[ ...fieldsToRender, ...additionalSelectionItemsToRender ].forEach( (r)=>{
+		if( r['priorityInStep'] == max_priority ){
+			itemsToRender.push( r );
+		}
+	});
+
+	return itemsToRender;
 
 }
 
