@@ -94,7 +94,7 @@ class SBSCDefPTShortCode{
 
         $tblItmData = $tblpn . '_items_data';
 
-        $sql = "SELECT itd.* FROM $tblnm vi ";
+        $sql = "SELECT itd.*,vi.priority_in_step FROM $tblnm vi ";
 
         $sql .= "JOIN $tblItmData itd ON itd.id = vi.id_item ";
 
@@ -107,7 +107,7 @@ class SBSCDefPTShortCode{
 
         $tblItmFld = $tblpn . '_items_field';
 
-        $sql = "SELECT itf.* FROM $tblnm vi ";
+        $sql = "SELECT itf.*,vi.priority_in_step FROM $tblnm vi ";
 
         $sql .= "JOIN $tblItmFld itf ON itf.id = vi.id_item ";
 
