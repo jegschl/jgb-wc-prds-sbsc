@@ -233,6 +233,51 @@ class SBSCDefPTShortCode{
         return $r;
     }
 
+    private function load_addtnl_selection_templates_definitions(){
+
+        $tplFl = $this->plg_path . 'includes/widgetsman/widgets/frontend/additional-selection-wrapper.php';
+
+        ob_start();
+                       
+        load_template( $tplFl, false );
+
+        $tplWrppr = ob_get_clean();
+
+
+        $tplFl = $this->plg_path . 'includes/widgetsman/widgets/frontend/additional-selection-option.php';
+
+        ob_start();
+                       
+        load_template( $tplFl, false );
+
+        $tplOptions = ob_get_clean();
+
+
+        $styleId = 'adtnl-sel-css';
+        
+        wp_register_style( $styleId, plugin_dir_url( $this->plg_path ) . 'public/css/additional-selection.css' );
+
+        
+        $version = filemtime( $this->plg_path . 'public/js/additional-selection.js' );
+
+        $scriptId = 'adtnl-sel-js';
+
+        wp_register_script( $scriptId, plugin_dir_url( $this->plg_path ) . 'public/js/additional-selection.js', ['jquery'], $version, true );
+
+        $defs = [
+                    'default' => [
+                        'choiceCombinationId' => null,
+                        'htmlTplWrapper' => $tplWrppr,
+                        'htmlTplOptions'  => $tplOptions,
+                        'scriptIdCss' => $styleId,
+                        'scriptIdJs' => $scriptId
+                    ]
+                ];
+
+        return apply_filters('JGB/WPSBSC/additional_selection_templates_definitions', $defs );
+
+    }
+
     public function get_step_wraper_begin_tpl(){
         ob_start();
         ?>
@@ -269,8 +314,12 @@ class SBSCDefPTShortCode{
 
         $s  = "SELECT DISTINCT priority_in_step as steps FROM {$pfx}jgb_wpsbsc_fields ";
         $s .= "WHERE post_id = %d ";
+        $s .= "UNION ";
+        $s .= "SELECT DISTINCT priority_in_step as steps FROM {$pfx}jgb_wpsbsc_vcs_items ";
+        $s .= "WHERE post_id = %d ";
+        $s .= "ORDER BY steps ASC";
 
-        $steps = $wpdb->get_results( $wpdb->prepare( $s, $post_id ), ARRAY_A );
+        $steps = $wpdb->get_results( $wpdb->prepare( $s, $post_id, $post_id ), ARRAY_A );
 
         $r = [];
         foreach( $steps as $step ){
@@ -301,6 +350,8 @@ class SBSCDefPTShortCode{
 
             $script_array_info['fieldsTemplates'] = $this->get_fields_html_templates( $atts['id'] );
 
+            $script_array_info['additionalSelectionTemplates'] = $this->load_addtnl_selection_templates_definitions();
+            
             $script_array_info['beginStepWraperTpl'] = $this->get_step_wraper_begin_tpl();
 
             $script_array_info['endStepWraperTpl'] = $this->get_step_wraper_end_tpl();
