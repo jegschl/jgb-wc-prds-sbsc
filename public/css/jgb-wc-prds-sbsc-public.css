@@ -137,7 +137,7 @@
 .step table.field .value .wrapper .buton-group.multiple{
     width: 100%;
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: start;
 }
 
