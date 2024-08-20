@@ -1,0 +1,7 @@
+
+.step table.field .value .wrapper .buton-group.simple{
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: start;
+}
