@@ -13,6 +13,8 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
 		optionsHRd += optHtml;
 	});
 
+    htmlTplWrapper = htmlTplWrapper.replace( "{{additional-selection-id}}", fieldData['vcsItemId'] );
+
     htmlTplWrapper = htmlTplWrapper.replace( "{{additional-selection-label}}", fieldData['vcsItemLabel'] );
 
     htmlTplWrapper = htmlTplWrapper.replace( "{{opt-label}}", 'Selecciona una opción' );
