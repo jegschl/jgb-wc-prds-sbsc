@@ -256,10 +256,12 @@ class SBSCDefPTShortCode{
         $styleId = 'adtnl-sel-css';
 
         $bsfn = 'additional-selection.css';
-        $dir = plugin_dir_url( $this->plg_path  . 'public/css/' . $bsfn );
-        $url = $dir . $bsfn;
+        $dir = $this->plg_path  . 'public/css/';
+        $path = $dir . $bsfn;
+        $url = plugin_dir_url( $path ) . $bsfn;
+        $version = filemtime( $path );
         
-        wp_register_style( $styleId,  $url );
+        wp_register_style( $styleId,  $url, ['jgb-wc-prds-sbsc'], $version );
 
         
         
