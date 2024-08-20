@@ -22,7 +22,9 @@
                     
                     <div class="buton-group simple" data-opts-sels="">
 
-                    {{#additional-selection-options}}
+                        {{#additional-selection-options}}
+
+                    </div>
 
                 </div>
             </td>
