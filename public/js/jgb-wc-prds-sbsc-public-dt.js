@@ -275,6 +275,59 @@ function currentParentFVPath(){
 
 }
 
+function itemTypeFieldOptionsHtmlAssembly( fld ){
+
+	let fieldSlug = null;
+	if( typeof fld['slug'] == 'string' ){
+		fieldSlug = fld['slug'];
+	} else {
+		fieldSlug = fld['slug'][0];
+	}
+	
+	const fieldOptions = fld['options'];
+
+	let optionsHRd = '';
+
+	// unir todas las opciones disponibles en un solo string.
+	fieldOptions.forEach( (opt,i)=>{
+		optionsHRd += i>0 ? "\n" : '';
+		optionsHRd += JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['options'][ opt['slug'] ];
+	});
+
+	return JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['wrapper'][ fieldSlug ].replace("{{#radio-options}}", optionsHRd );
+
+}
+
+function itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step){
+
+	let fieldSlug = fld['slug'];
+
+	let fasTplInfo;
+
+	let aohEval;
+
+	let existHandlerFunction;
+
+	if( JGB_WPSBSC_DATA['additionalSelectionTemplates'][fieldSlug] == undefined ){
+		fasTplInfo = JGB_WPSBSC_DATA['additionalSelectionTemplates']['default'];
+	} else {
+		fasTplInfo = JGB_WPSBSC_DATA['additionalSelectionTemplates'][fieldSlug];
+	}
+
+	const functionName = fasTplInfo['assemblyOptionsHandler'];
+
+	existHandlerFunction = eval("typeof " + functionName );
+
+	if( existHandlerFunction == 'function' ){
+
+		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOptions'] );
+
+		return aohEval;
+		
+	}
+
+}
+
 function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 
 	let templatesToRender = [];	
@@ -287,24 +340,19 @@ function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 
 	
 	fieldsToRender.forEach( ( fld )=>{
-		let fieldSlug = null;
-		if( typeof fld['slug'] == 'string' ){
-			fieldSlug = fld['slug'];
-		} else {
-			fieldSlug = fld['slug'][0];
+
+		let fieldWrapperTpl;
+		
+		switch( fld['type'] ){
+
+			case 'field:additional-selection':
+				fieldWrapperTpl = itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step );
+				break;
+
+			default: // type = 'field'
+				fieldWrapperTpl = itemTypeFieldOptionsHtmlAssembly( fld );
+
 		}
-
-		const fieldOptions = fld['options'];
-
-		let optionsHRd = '';
-
-		// unir todas las opciones disponibles en un solo string.
-		fieldOptions.forEach( (opt,i)=>{
-			optionsHRd += i>0 ? "\n" : '';
-			optionsHRd += JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['options'][ opt['slug'] ];
-		});
-
-		const fieldWrapperTpl = JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['wrapper'][ fieldSlug ].replace("{{#radio-options}}", optionsHRd );
 
 		templatesToRender.push( fieldWrapperTpl );
 
@@ -316,6 +364,8 @@ function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 	return templatesToRender;
 
 }
+
+
 
 function getFieldsToRender( parentFVPath = '' ){
 	

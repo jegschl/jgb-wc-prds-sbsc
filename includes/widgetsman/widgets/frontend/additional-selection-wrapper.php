@@ -20,7 +20,7 @@
                     <label for="id-value-{{opt-slug}}">{{opt-label}}</label>
                     <input type="radio" name="{{opt-slug}}" value="{{opt-value}}" id="id-value-{{opt-slug}}"/>
                     
-                    <div class="buton-group {{opt-value_type}}" data-opts-sels="">
+                    <div class="buton-group simple" data-opts-sels="">
 
                     {{#additional-selection-options}}
 

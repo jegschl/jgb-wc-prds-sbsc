@@ -254,15 +254,25 @@ class SBSCDefPTShortCode{
 
 
         $styleId = 'adtnl-sel-css';
+
+        $bsfn = 'additional-selection.css';
+        $dir = plugin_dir_url( $this->plg_path  . 'public/css/' . $bsfn );
+        $url = $dir . $bsfn;
         
-        wp_register_style( $styleId, plugin_dir_url( $this->plg_path ) . 'public/css/additional-selection.css' );
+        wp_register_style( $styleId,  $url );
 
         
-        $version = filemtime( $this->plg_path . 'public/js/additional-selection.js' );
+        
 
         $scriptId = 'adtnl-sel-js';
 
-        wp_register_script( $scriptId, plugin_dir_url( $this->plg_path ) . 'public/js/additional-selection.js', ['jquery'], $version, true );
+        $bsfn = 'additional-selection.js';
+        $dir = plugin_dir_path( $this->plg_path  . 'public/js/' . $bsfn );
+        $path = $dir . $bsfn;
+        $url = plugin_dir_url( $path ) . $bsfn;
+        $version = filemtime( $path );
+
+        wp_register_script( $scriptId, $url, ['jquery'], $version, true );
 
         $defs = [
                     'default' => [
@@ -270,7 +280,8 @@ class SBSCDefPTShortCode{
                         'htmlTplWrapper' => $tplWrppr,
                         'htmlTplOptions'  => $tplOptions,
                         'scriptIdCss' => $styleId,
-                        'scriptIdJs' => $scriptId
+                        'scriptIdJs' => $scriptId,
+                        'assemblyOptionsHandler' => 'additionalSelectionAssemblyOptions'
                     ]
                 ];
 
@@ -352,6 +363,11 @@ class SBSCDefPTShortCode{
 
             $script_array_info['additionalSelectionTemplates'] = $this->load_addtnl_selection_templates_definitions();
             
+            foreach( $script_array_info['additionalSelectionTemplates'] as $ast){
+                wp_enqueue_style( $ast['scriptIdCss'] );
+                wp_enqueue_script( $ast['scriptIdJs'] );
+            }
+
             $script_array_info['beginStepWraperTpl'] = $this->get_step_wraper_begin_tpl();
 
             $script_array_info['endStepWraperTpl'] = $this->get_step_wraper_end_tpl();
@@ -359,6 +375,8 @@ class SBSCDefPTShortCode{
             $script_array_info['stepTitles'] = $this->get_step_titles( $atts['id'] );
 
             $script_array_info['popupMakerId'] = $this->popup_maker_id;
+
+            
             
             $jsid = 'taffy-min';
             $jsfn = $jsid . '.js';
