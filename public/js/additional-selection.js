@@ -50,6 +50,7 @@ function adSltnSetEventHandlersForOptions(){
             const fatherOptEl   = $(evnt.target).closest('.buton-group');
             const optionSelected = $(evnt.target).text();
             const valueRegId = $(evnt.target).data('option');
+            const fieldLabel = $(fatherFieldEl).find('.addtnl-slct-title').text();
             let i;
             let rawBgos = $(fatherOptEl).data('opts-sels');
             let arBgos;
@@ -98,7 +99,7 @@ function adSltnSetEventHandlersForOptions(){
                 } );
             }
 
-            setFeatureValue( fieldId, fieldSlug, rawBgos, optionSelected, valueRegId, 'field:additional-select' );
+            setFeatureValue( fieldId, fieldSlug, rawBgos, optionSelected, valueRegId, 'field:additional-select', fieldLabel );
             desplegarSFs();
             desplegarPrice();
             renderNextStep();

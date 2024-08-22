@@ -9,10 +9,11 @@
     cellspacing="0" 
     data-field-additional-selection-id="{{additional-selection-id}}"
     data-field-additional-selection-slug="{{additional-selection-slug}}"
+    data-field-additional-selection-step-priority="{{as-step-priority}}"
 >
     <tbody>
         <tr>
-        <td colspan="2" class="label">{{additional-selection-label}} </td>
+        <td colspan="2" class="label addtnl-slct-title">{{additional-selection-label}} </td>
         </tr>
         
         <tr>

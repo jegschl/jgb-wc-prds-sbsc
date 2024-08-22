@@ -539,7 +539,7 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldType = 'field' ){
+function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldType = 'field', fieldLabel = null ){
 	let i;
 	let removeFrom = -1;
 	let vcsItemExist;
@@ -551,6 +551,7 @@ function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId,
 				'fieldId': fieldId,
 				'field': fieldSlug,
 				'fieldType': fieldType,
+				'label': fieldLabel,
 				'value': valueSlug,
 				'valueLabel': valueLabel,
 				'valueRegId': valueRegId
