@@ -4,10 +4,13 @@ let selectedFeatures = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
 let stepPriorityCheks = [];
+let currentGlobalFieldsData;
 
 const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
 const cartFormSltr = "form.cart";
+
+const afterRenderStep = new CustomEvent('afterRenderStep');
 
 
 TAFFY.extend('max', function (column) {
@@ -323,7 +326,7 @@ function itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step){
 		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOptions'] );
 
 		return aohEval;
-		
+
 	}
 
 }
@@ -404,7 +407,8 @@ function renderStep(){
 
 	swiper.appendSlide( templatesToRender.join("\n") );
 
-	setEventHandlersForAvailablesValuesChoicesSelectors();
+	//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento afterRenderStep.
+	document.dispatchEvent( afterRenderStep );
 
 }
 
@@ -526,55 +530,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			swiper.slideNext(speed);
 		});
 
-		$('.step .value .wrapper .option-buton:not(.outer)').off('click');
-		$('.step .value .wrapper .option-buton:not(.outer)').click(function(evnt){
-			const fatherEl = $(evnt.target).closest('.wrapper');
-			const fatherFieldEl = $(evnt.target).closest('table.field');
-			const fatherOptEl   = $(evnt.target).closest('.buton-group');
-			const optionSelected = $(evnt.target).data('option');
-			let i;
-			let rawBgos = $(fatherOptEl).data('opts-sels');
-			let arBgos;
-			if( rawBgos != ""){
-				arBgos = rawBgos.split(',');
-			} else {
-				arBgos = Array();
-			}
-			
-
-			if( (fatherEl.length!=undefined) && fatherEl.length > 0 ){
-				$(fatherEl).find('input[type="radio"]').prop('checked', true);
-				$(fatherEl).find('input[type="radio"]').trigger('click');
-			}
-
-			if( (fatherEl.length!=undefined) && fatherFieldEl.length > 0 ){
-				$(fatherFieldEl).find('.value .select-buton.outer').removeClass('selected');
-				
-			}
-			$(fatherEl).find('.select-buton.outer').addClass('selected');
-
-
-			if( $(fatherOptEl).hasClass('multiple') ){
-				i = arBgos.indexOf( optionSelected );
-				if( i >= 0 ){
-					arBgos.splice( i, 1 );
-				} else {
-					arBgos.push( optionSelected );
-				}
-
-				rawBgos = arBgos.join(',');
-				$(fatherOptEl).data('opts-sels',rawBgos);
-
-				$(fatherOptEl).find('.option-buton.outer').removeClass('selected');
-
-				$(fatherOptEl).find('.option-buton:not(.outer)').each( (i,e)=>{
-					const btnOpt = $(e).data('option');
-					if( arBgos.indexOf( btnOpt ) >= 0 ){
-						$(e).closest('.option-buton.outer').addClass('selected');
-					}
-				} );
-			}
-		});
+		
 	})( jQuery );
 }
 
@@ -583,28 +539,63 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId ){
+function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldType = 'field' ){
 	let i;
 	let removeFrom = -1;
-	for(i=0; i<selectedFeatures.length; i++){
-		if( selectedFeatures[i].field == fieldSlug ){
-			selectedFeatures[i].fieldId == fieldId;
-			selectedFeatures[i].value = valueSlug;
-			selectedFeatures[i].valueLabel = valueLabel;
-			selectedFeatures[i].valueRegId = valueRegId;
-			removeFrom = i;
+	let vcsItemExist;
+	
+	if( fieldType == 'field:additional-select'){
+		vcsItemExist = vcsItemCheckInFeatures( fieldSlug );
+		if( vcsItemExist == null ){
+			selectedFeatures.push({
+				'fieldId': fieldId,
+				'field': fieldSlug,
+				'fieldType': fieldType,
+				'value': valueSlug,
+				'valueLabel': valueLabel,
+				'valueRegId': valueRegId
+			});
+			vcsItemExist = selectedFeatures.length - 1;
+		} else {
+			selectedFeatures[vcsItemExist].fieldId = fieldId;
+			selectedFeatures[vcsItemExist].fieldType = fieldType;
+			selectedFeatures[vcsItemExist].value = valueSlug;
+			selectedFeatures[vcsItemExist].valueLabel = valueLabel;
+			selectedFeatures[vcsItemExist].valueRegId = valueRegId;
 		}
+		removeFrom = vcsItemExist;
+	} else {
 
-		if( ( removeFrom != -1 ) && ( i > removeFrom ) ){
-			selectedFeatures[i].value = null;
-			selectedFeatures[i].valueLabel = null;
-			selectedFeatures[i].valueRegId = null;
+		for(i=0; i<selectedFeatures.length; i++){
+			if( selectedFeatures[i].field == fieldSlug ){
+				selectedFeatures[i].fieldId = fieldId;
+				selectedFeatures[i].fieldType = fieldType;
+				selectedFeatures[i].value = valueSlug;
+				selectedFeatures[i].valueLabel = valueLabel;
+				selectedFeatures[i].valueRegId = valueRegId;
+				removeFrom = i;
+			}
+
+			if( ( removeFrom != -1 ) && ( i > removeFrom ) ){
+				selectedFeatures[i].value 		= null;
+				selectedFeatures[i].valueLabel = null;
+				selectedFeatures[i].valueRegId = null;
+			}
+
 		}
 
 	}
 }
 
-
+function vcsItemCheckInFeatures( slug ){
+	let i;
+	for(i=0; i<selectedFeatures.length; i++){
+		if( ( selectedFeatures[i].field == slug ) && ( selectedFeatures[i].fieldType == 'field:additional-select' ) ){
+			return i;
+		}
+	}
+	return null;
+}
 
 function checkButtonsNavigationStatus(){
 	(function( $ ) {
@@ -813,6 +804,9 @@ function cpMatchs(){
 	$(document).ready( ()=>{
 		initializeDb();
 		ppuMkrSlctr = '#pum-' + JGB_WPSBSC_DATA['popupMakerId'];
+
+		document.addEventListener('afterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
+
 	});
 
 })( jQuery );
