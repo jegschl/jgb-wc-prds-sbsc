@@ -682,7 +682,7 @@ function getFieldFromVCSItem( VCSItem ){
 }
 
 function cpMatchs(){
-	let ftrdCombsVls = [];
+
 	let i = 0;
 	let vlsIdsCmbnsStr;
 	let r;
@@ -690,13 +690,7 @@ function cpMatchs(){
 	let itemsData = [];
 	let curItem = {};
 
-	selectedFeatures.forEach(function(e){
-		if( e.valueRegId != null ){
-			ftrdCombsVls.push(e.valueRegId);
-		}
-	});
-
-	vlsIdsCmbnsStr = ftrdCombsVls.join(':');
+	vlsIdsCmbnsStr = currentParentFVPath();
 
 	r = dtChoicesCombinations({vls_ids_combinations_string:vlsIdsCmbnsStr}).first();
 

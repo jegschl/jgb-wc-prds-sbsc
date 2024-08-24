@@ -1053,7 +1053,7 @@ class JGBWPSChoiceTreeImportParser{
                         'item_type'             => $itm['item_type'],
                         'slug'                  => $itm['slug'],
                         'label'                 => $itm['label'],
-                        'priority_in_step'              => $itm['priority_in_step']
+                        'priority_in_step'      => $itm['priority_in_step']
                     ]
                 )
             ){
