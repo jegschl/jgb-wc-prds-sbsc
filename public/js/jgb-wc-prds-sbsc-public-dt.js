@@ -417,16 +417,20 @@ function renderStep(){
 
 	fieldsToRender = getFieldsToRender( parentFVPath );
 
-	incrmtr = ( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ) ? 1 : 2;
+	if( fieldsToRender.length > 0 ){
 
-	let step = swiper.activeIndex + incrmtr;
+		incrmtr = ( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ) ? 1 : 2;
 
-	templatesToRender = prepareTemplatesToRenderForFields( fieldsToRender, step );
+		let step = swiper.activeIndex + incrmtr;
 
-	swiper.appendSlide( templatesToRender.join("\n") );
+		templatesToRender = prepareTemplatesToRenderForFields( fieldsToRender, step );
 
-	//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento jwpsbscAfterRenderStep.
-	document.dispatchEvent( jwpsbscAfterRenderStep );
+		swiper.appendSlide( templatesToRender.join("\n") );
+
+		//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento jwpsbscAfterRenderStep.
+		document.dispatchEvent( jwpsbscAfterRenderStep );
+
+	}
 
 }
 
@@ -514,6 +518,12 @@ function desplegarPrice(){
 	})( jQuery );
 }
 
+function swiperNextSlide(){
+	document.removeEventListener('jwpsbscAfterRenderStep', swiperNextSlide );
+	swiper.slideNext(speed);
+	
+}
+
 function setEventHandlersForAvailablesValuesChoicesSelectors(){
 
 	(function( $ ) {
@@ -543,9 +553,10 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
 			desplegarSFs();
 			desplegarPrice();
+			document.addEventListener('jwpsbscAfterRenderStep', swiperNextSlide );
 			renderNextStep();
 			//checkButtonsNavigationStatus();
-			swiper.slideNext(speed);
+			
 		});
 
 		

@@ -105,9 +105,8 @@ function adSltnSetEventHandlersForOptions(){
             setFeatureValue( fieldId, fieldSlug, rawBgos, optionSelected, valueRegId, 'field:additional-select', fieldLabel, itemStepPriority );
             desplegarSFs();
             desplegarPrice();
+            document.addEventListener('jwpsbscAfterRenderStep', swiperNextSlide );
             renderNextStep();
-
-            swiper.slideNext(speed);
         });
 
     })( jQuery );
