@@ -4,14 +4,26 @@ let selectedFeatures = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
 let stepPriorityCheks = [];
-let currentGlobalFieldsData;
 
 const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
 const cartFormSltr = "form.cart";
 
-const afterRenderStep = new CustomEvent('afterRenderStep');
+const jwpsbscAfterRenderStep = new CustomEvent('jwpsbscAfterRenderStep');
 
+
+const eventParamsFeatureValue = {
+	'fieldId': null,
+	'field': null,
+	'value': null,
+	'valueLabel': null,
+	'valueRegId': null,
+	'fieldType': null,
+	'label': null,
+	'priorityInStep': null,
+	'stepOnStore': null
+};
+const jwpsbscSetFeatureValue = new CustomEvent('jwpsbscSetFeatureValue', {detail: eventParamsFeatureValue});
 
 TAFFY.extend('max', function (column) {
 
@@ -128,7 +140,7 @@ function get_fields_to_render_type_vcsItem_field_subType_additional_selection( p
 
 	let itemsToRender = [];
 
-	let i = 0;
+	let j,i = 0;
 
 	dtChoicesCombinations(q).each(function(recordChCmb){
 		/* choicesCombinationsIds.push( recordChCmb['id'].toString() ); */
@@ -136,29 +148,31 @@ function get_fields_to_render_type_vcsItem_field_subType_additional_selection( p
 		const q = { id_choice_combination: recordChCmb['id'].toString(), item_type: 'FIELD' };
 		
 		dtVcsItems(q).each(function(recordVcsItem){
+			j = vcsItemCheckInFeatures( recordVcsItem['slug'] );
+			if( ( j == null ) || !vcsItemValidationInFeaturesByIndex( j ) ){
+				r[i] = { 
+					vcsItemId: recordVcsItem['id'].toString(),
+					slug: recordVcsItem['slug'],
+					vcsItemLabel: recordVcsItem['label'],
+					priorityInStep: parseInt( recordVcsItem['priority_in_step'] ),
+					type: 'field:additional-selection'
+				};
+				
+				const q = { id: recordVcsItem['id_item'].toString() };
 
-			r[i] = { 
-				vcsItemId: recordVcsItem['id'].toString(),
-				slug: recordVcsItem['slug'],
-				vcsItemLabel: recordVcsItem['label'],
-				priorityInStep: parseInt( recordVcsItem['priority_in_step'] ),
-				type: 'field:additional-selection'
-			};
-			
-			const q = { id: recordVcsItem['id_item'].toString() };
+				dtItemsField(q).each(function(recordItemField){
 
-			dtItemsField(q).each(function(recordItemField){
+					r[i].subType = recordItemField['type'];
+					if( r[i].subType == 'RADIO' ){
+						r[i].options = JSON.parse( recordItemField['options'] )['selection-options'];
+					} else {
+						r[i].options = recordItemField['options'];
+					}
 
-				r[i].subType = recordItemField['type'];
-				if( r[i].subType == 'RADIO' ){
-					r[i].options = JSON.parse( recordItemField['options'] )['selection-options'];
-				} else {
-					r[i].options = recordItemField['options'];
-				}
+				});
 
-			});
-
-			i++;
+				i++;
+			}
 
 		});
 
@@ -266,7 +280,10 @@ function currentParentFVPath(){
 
 	for(i=0; i<selectedFeatures.length; i++){
 		
-		if( selectedFeatures[i].valueRegId != null ){
+		if( ( selectedFeatures[i].valueRegId != null ) 
+			&& ( selectedFeatures[i].fieldType != undefined )
+			&& ( selectedFeatures[i].fieldType == 'field' )
+		){
 			rs += i > 0 ? ',' : '';
 			rs += selectedFeatures[i].fieldId + '=' + selectedFeatures[i].valueRegId;
 		} else {
@@ -407,8 +424,8 @@ function renderStep(){
 
 	swiper.appendSlide( templatesToRender.join("\n") );
 
-	//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento afterRenderStep.
-	document.dispatchEvent( afterRenderStep );
+	//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento jwpsbscAfterRenderStep.
+	document.dispatchEvent( jwpsbscAfterRenderStep );
 
 }
 
@@ -539,50 +556,51 @@ function getFieldSlugById( id ){
 	return s;
 }
 
-function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldType = 'field', fieldLabel = null ){
+
+function setFeatureValueForFieldTypeField( eventSetFeatureValue ){
 	let i;
-	let removeFrom = -1;
-	let vcsItemExist;
+    const fieldId = eventSetFeatureValue.detail.fieldId;
+	const fieldSlug = eventSetFeatureValue.detail.fieldSlug;
+	const valueSlug = eventSetFeatureValue.detail.value;
+	const valueLabel = eventSetFeatureValue.detail.valueLabel;
+	const valueRegId = eventSetFeatureValue.detail.valueRegId;
 	
-	if( fieldType == 'field:additional-select'){
-		vcsItemExist = vcsItemCheckInFeatures( fieldSlug );
-		if( vcsItemExist == null ){
-			selectedFeatures.push({
-				'fieldId': fieldId,
-				'field': fieldSlug,
-				'fieldType': fieldType,
-				'label': fieldLabel,
-				'value': valueSlug,
-				'valueLabel': valueLabel,
-				'valueRegId': valueRegId
-			});
-			vcsItemExist = selectedFeatures.length - 1;
-		} else {
-			selectedFeatures[vcsItemExist].fieldId = fieldId;
-			selectedFeatures[vcsItemExist].fieldType = fieldType;
-			selectedFeatures[vcsItemExist].value = valueSlug;
-			selectedFeatures[vcsItemExist].valueLabel = valueLabel;
-			selectedFeatures[vcsItemExist].valueRegId = valueRegId;
+	for(i=0; i<selectedFeatures.length; i++){
+		if( selectedFeatures[i].field == fieldSlug ){
+			selectedFeatures[i].fieldId = fieldId;
+			selectedFeatures[i].value = valueSlug;
+			selectedFeatures[i].valueLabel = valueLabel;
+			selectedFeatures[i].valueRegId = valueRegId;
+			selectedFeatures[i].stepOnStore = swiper.activeIndex;
 		}
-		removeFrom = vcsItemExist;
-	} else {
+	}
+}
 
-		for(i=0; i<selectedFeatures.length; i++){
-			if( selectedFeatures[i].field == fieldSlug ){
-				selectedFeatures[i].fieldId = fieldId;
-				selectedFeatures[i].fieldType = fieldType;
-				selectedFeatures[i].value = valueSlug;
-				selectedFeatures[i].valueLabel = valueLabel;
-				selectedFeatures[i].valueRegId = valueRegId;
-				removeFrom = i;
-			}
 
-			if( ( removeFrom != -1 ) && ( i > removeFrom ) ){
-				selectedFeatures[i].value 		= null;
-				selectedFeatures[i].valueLabel = null;
-				selectedFeatures[i].valueRegId = null;
-			}
+function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldType = 'field', fieldLabel = null, itemPriority = null ){
+	let i;
+	
+	eventParamsFeatureValue['fieldId'] = fieldId;
+	eventParamsFeatureValue['field'] = fieldSlug;
+	eventParamsFeatureValue['value'] = valueSlug;
+	eventParamsFeatureValue['valueLabel'] = valueLabel;
+	eventParamsFeatureValue['valueRegId'] = valueRegId;
+	eventParamsFeatureValue['fieldType'] = fieldType;
+	eventParamsFeatureValue['label'] = fieldLabel;
+	eventParamsFeatureValue['priorityInStep'] = itemPriority;
+	eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
 
+	document.dispatchEvent( jwpsbscSetFeatureValue );
+	
+	for(i=0; i<selectedFeatures.length; i++){
+
+		if( ( ( selectedFeatures[i].fieldType == 'field' )
+		      || (selectedFeatures[i].fieldType == 'field:additional-select')
+		    )
+		    && ( selectedFeatures[i].stepOnStore > swiper.activeIndex )  ){
+			selectedFeatures[i].value 		= null;
+			selectedFeatures[i].valueLabel = null;
+			selectedFeatures[i].valueRegId = null;
 		}
 
 	}
@@ -596,6 +614,22 @@ function vcsItemCheckInFeatures( slug ){
 		}
 	}
 	return null;
+}
+
+function vcsItemValidationInFeaturesByIndex( index ){
+	if( selectedFeatures[index].value == null ){
+		return false;
+	}
+
+	if( selectedFeatures[index].valueRegId == null ){
+		return false;
+	}
+
+	if( selectedFeatures[index].valueLabel == null ){
+		return false;
+	}
+
+	return true;
 }
 
 function checkButtonsNavigationStatus(){
@@ -806,7 +840,7 @@ function cpMatchs(){
 		initializeDb();
 		ppuMkrSlctr = '#pum-' + JGB_WPSBSC_DATA['popupMakerId'];
 
-		document.addEventListener('afterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
+		document.addEventListener('jwpsbscAfterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
 
 	});
 

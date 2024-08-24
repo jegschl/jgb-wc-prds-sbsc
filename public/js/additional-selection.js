@@ -17,6 +17,8 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
 
     htmlTplWrapper = htmlTplWrapper.replace( "{{opt-label}}", 'Selecciona una opción' );
 
+    htmlTplWrapper = htmlTplWrapper.replace( "{{as-step-priority}}", fieldData['priorityInStep'] );
+
 
 	// unir todas las opciones disponibles en un solo string.
 	fieldOptions.forEach( (opt,i)=>{
@@ -51,6 +53,7 @@ function adSltnSetEventHandlersForOptions(){
             const optionSelected = $(evnt.target).text();
             const valueRegId = $(evnt.target).data('option');
             const fieldLabel = $(fatherFieldEl).find('.addtnl-slct-title').text();
+            const itemStepPriority = $(fatherFieldEl).data('field-additional-selection-step-priority');
             let i;
             let rawBgos = $(fatherOptEl).data('opts-sels');
             let arBgos;
@@ -99,7 +102,7 @@ function adSltnSetEventHandlersForOptions(){
                 } );
             }
 
-            setFeatureValue( fieldId, fieldSlug, rawBgos, optionSelected, valueRegId, 'field:additional-select', fieldLabel );
+            setFeatureValue( fieldId, fieldSlug, rawBgos, optionSelected, valueRegId, 'field:additional-select', fieldLabel, itemStepPriority );
             desplegarSFs();
             desplegarPrice();
             renderNextStep();
@@ -110,6 +113,43 @@ function adSltnSetEventHandlersForOptions(){
     })( jQuery );
 
     
+}
+
+function setFeatureValueForFieldTypeFieldAdditionalSelection( eventSetFeatureValue ){
+
+    //fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldLabel, itemPriority
+    const fieldId = eventSetFeatureValue.detail.fieldId;
+	const fieldSlug = eventSetFeatureValue.detail.fieldSlug;
+	const valueSlug = eventSetFeatureValue.detail.value;
+	const valueLabel = eventSetFeatureValue.detail.valueLabel;
+	const valueRegId = eventSetFeatureValue.detail.valueRegId;
+    const itemPriority = eventSetFeatureValue.detail.priorityInStep;
+
+	let vcsItemExist;
+
+	vcsItemExist = vcsItemCheckInFeatures( fieldSlug );
+	if( vcsItemExist == null ){
+		selectedFeatures.push({
+			'fieldId': fieldId,
+			'field': fieldSlug,
+			'fieldType': 'field:additional-select',
+			'label': fieldLabel,
+			'value': valueSlug,
+			'valueLabel': valueLabel,
+			'valueRegId': valueRegId,
+			'priorityInStep': itemPriority,
+			'stepOnStore': swiper.activeIndex
+		});
+		vcsItemExist = selectedFeatures.length - 1;
+	} else {
+		selectedFeatures[vcsItemExist].fieldId = fieldId;
+		selectedFeatures[vcsItemExist].fieldType = fieldType;
+		selectedFeatures[vcsItemExist].value = valueSlug;
+		selectedFeatures[vcsItemExist].valueLabel = valueLabel;
+		selectedFeatures[vcsItemExist].valueRegId = valueRegId;
+		selectedFeatures[vcsItemExist].priorityInStep = itemPriority;
+		selectedFeatures[vcsItemExist].stepOnStore = swiper.activeIndex;
+	}
 }
 
 (function( $ ) {
