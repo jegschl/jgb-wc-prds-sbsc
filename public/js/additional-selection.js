@@ -154,6 +154,8 @@ function setFeatureValueForFieldTypeFieldAdditionalSelection( eventSetFeatureVal
 
 (function( $ ) {
 
-    document.addEventListener('afterRenderStep', adSltnSetEventHandlersForOptions );
+    document.addEventListener('jwpsbscAfterRenderStep', adSltnSetEventHandlersForOptions );
+
+    document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeFieldAdditionalSelection );
 
 })( jQuery );
