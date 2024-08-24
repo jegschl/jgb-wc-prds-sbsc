@@ -62,6 +62,7 @@ function loadFeatures(){
 		const feature = {
 			'fieldId': record["id"],
 			'field': record["slug"],
+			'fieldType': 'field',
 			'label': record["name"],
 			'vlSltr': "input[name='" + record["slug"] + "']",
 			'value': null,
@@ -558,19 +559,18 @@ function getFieldSlugById( id ){
 
 
 function setFeatureValueForFieldTypeField( eventSetFeatureValue ){
+	if( eventSetFeatureValue.detail.fieldType != 'field' ){
+        return;
+    }
+
 	let i;
-    const fieldId = eventSetFeatureValue.detail.fieldId;
-	const fieldSlug = eventSetFeatureValue.detail.fieldSlug;
-	const valueSlug = eventSetFeatureValue.detail.value;
-	const valueLabel = eventSetFeatureValue.detail.valueLabel;
-	const valueRegId = eventSetFeatureValue.detail.valueRegId;
-	
+
 	for(i=0; i<selectedFeatures.length; i++){
-		if( selectedFeatures[i].field == fieldSlug ){
-			selectedFeatures[i].fieldId = fieldId;
-			selectedFeatures[i].value = valueSlug;
-			selectedFeatures[i].valueLabel = valueLabel;
-			selectedFeatures[i].valueRegId = valueRegId;
+		if( selectedFeatures[i].field == eventSetFeatureValue.detail.field ){
+			selectedFeatures[i].fieldId = eventSetFeatureValue.detail.fieldId;
+			selectedFeatures[i].value = eventSetFeatureValue.detail.value;
+			selectedFeatures[i].valueLabel = eventSetFeatureValue.detail.valueLabel;
+			selectedFeatures[i].valueRegId = eventSetFeatureValue.detail.valueRegId;
 			selectedFeatures[i].stepOnStore = swiper.activeIndex;
 		}
 	}
@@ -841,6 +841,8 @@ function cpMatchs(){
 		ppuMkrSlctr = '#pum-' + JGB_WPSBSC_DATA['popupMakerId'];
 
 		document.addEventListener('jwpsbscAfterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
+
+		document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeField );
 
 	});
 

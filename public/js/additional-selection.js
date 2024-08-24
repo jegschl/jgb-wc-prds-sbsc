@@ -118,37 +118,30 @@ function adSltnSetEventHandlersForOptions(){
 function setFeatureValueForFieldTypeFieldAdditionalSelection( eventSetFeatureValue ){
 
     //fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldLabel, itemPriority
-    const fieldId = eventSetFeatureValue.detail.fieldId;
-	const fieldSlug = eventSetFeatureValue.detail.fieldSlug;
-	const valueSlug = eventSetFeatureValue.detail.value;
-	const valueLabel = eventSetFeatureValue.detail.valueLabel;
-	const valueRegId = eventSetFeatureValue.detail.valueRegId;
-    const itemPriority = eventSetFeatureValue.detail.priorityInStep;
+    if( eventSetFeatureValue.detail.fieldType != 'field:additional-select' ){
+        return;
+    }
 
 	let vcsItemExist;
 
-	vcsItemExist = vcsItemCheckInFeatures( fieldSlug );
+	vcsItemExist = vcsItemCheckInFeatures( eventSetFeatureValue.detail.field );
 	if( vcsItemExist == null ){
 		selectedFeatures.push({
-			'fieldId': fieldId,
-			'field': fieldSlug,
-			'fieldType': 'field:additional-select',
-			'label': fieldLabel,
-			'value': valueSlug,
-			'valueLabel': valueLabel,
-			'valueRegId': valueRegId,
-			'priorityInStep': itemPriority,
+			'fieldId': eventSetFeatureValue.detail.fieldId,
+			'field': eventSetFeatureValue.detail.field,
+			'fieldType': eventSetFeatureValue.detail.fieldType,
+			'label':  eventSetFeatureValue.detail.label,
+			'value': eventSetFeatureValue.detail.value,
+			'valueLabel': eventSetFeatureValue.detail.valueLabel,
+			'valueRegId': eventSetFeatureValue.detail.valueRegId,
+			'priorityInStep': eventSetFeatureValue.detail.priorityInStep,
 			'stepOnStore': swiper.activeIndex
 		});
 		vcsItemExist = selectedFeatures.length - 1;
 	} else {
-		selectedFeatures[vcsItemExist].fieldId = fieldId;
-		selectedFeatures[vcsItemExist].fieldType = fieldType;
-		selectedFeatures[vcsItemExist].value = valueSlug;
-		selectedFeatures[vcsItemExist].valueLabel = valueLabel;
-		selectedFeatures[vcsItemExist].valueRegId = valueRegId;
-		selectedFeatures[vcsItemExist].priorityInStep = itemPriority;
-		selectedFeatures[vcsItemExist].stepOnStore = swiper.activeIndex;
+		selectedFeatures[vcsItemExist].value = eventSetFeatureValue.detail.value;
+		selectedFeatures[vcsItemExist].valueLabel = eventSetFeatureValue.detail.valueLabel;
+		selectedFeatures[vcsItemExist].valueRegId = eventSetFeatureValue.detail.valueRegId;
 	}
 }
 
