@@ -703,7 +703,8 @@ class JGBWPSChoiceTreeImportParser{
             'label' => $currentFldData['label'],
             'data_type' => $dataType,
             'item_type' => 'DATA',
-            'value' => trim( $data )
+            'value' => trim( $data ),
+            'priority_in_step' => $currentFldData['priority_in_step']
         ];
 
         
