@@ -25,6 +25,13 @@ const eventParamsFeatureValue = {
 };
 const jwpsbscSetFeatureValue = new CustomEvent('jwpsbscSetFeatureValue', {detail: eventParamsFeatureValue});
 
+const eventParamsPrepareFieldHtmlTemplate = {
+	'field': null,
+	'htmlTpl': null
+};
+const jwpsbscPrepareFieldHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldHtmlTemplate', {detail: eventParamsPrepareFieldHtmlTemplate});
+
+
 TAFFY.extend('max', function (column) {
 
 	this.context({
@@ -374,7 +381,14 @@ function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 				fieldWrapperTpl = itemTypeFieldOptionsHtmlAssembly( fld );
 
 		}
-
+		
+		jwpsbscPrepareFieldHtmlTemplate.detail.field = fld;
+		jwpsbscPrepareFieldHtmlTemplate.detail.htmlTpl = fieldWrapperTpl;
+		
+		document.dispatchEvent( jwpsbscPrepareFieldHtmlTemplate );
+		
+		fieldWrapperTpl = jwpsbscPrepareFieldHtmlTemplate.detail.htmlTpl;
+		
 		templatesToRender.push( fieldWrapperTpl );
 
 	});
