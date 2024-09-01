@@ -37,10 +37,12 @@
 									
 									<tr>
 										<td class="value">
-                                            <div class="wrapper">
-                                                <label for="premium-glass">Cristales Premium</label>
+											<div class="wrapper">
+												<img width="24px" src="http://verwell.local/wp-content/uploads/2024/08/linea_cristales_premium_dark-256x203-1.png">
+                                                <label for="premium-glass">Premium</label>
                                                 <input type="radio" name="quality-glass" value="premium" id="premium-glass"/>
-                                                <div class="select-buton outer">
+                                                <p>Ofrece la máxima nitidez y confort con tecnología óptica avanzada para una visión superior y personalización avanzada, perfectos para aquellos que valoran la innovación <strong>(Desde $20.000)</strong>.</p>
+												<div class="select-buton outer">
                                                     <div class="select-buton">Escoger</div>
                                                 </div>
                                             </div>
@@ -49,9 +51,11 @@
                                     <tr>
                                         <td class="value">
                                             <div class="wrapper">
-                                                <label for="generic-glass">Cristales genéricos</label>
+												<img width="24px" src="http://verwell.local/wp-content/uploads/2024/08/linea_cristales_superior_dark-256x194-1.png">
+                                                <label for="generic-glass">Superior</label>
                                                 <input type="radio" name="quality-glass" value="generic" id="generic-glass"/>
-                                                <div class="select-buton outer">
+                                                <p>Combina economía y calidad con cristales duraderos, ideales para quienes buscan funcionalidad a un precio accesible <strong>(Desde $100.000)</strong>.</p>
+												<div class="select-buton outer">
                                                     <div class="select-buton">Escoger</div>
                                                 </div>
                                             </div>
