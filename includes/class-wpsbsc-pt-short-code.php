@@ -477,7 +477,7 @@ class SBSCDefPTShortCode{
     private function render_html( $atts ){
         $output = '';
 
-        $template_file_name = ( $atts['visualization-mode'] == 'json-data' ) || ( empty( $atts['visualization-mode'] ) ) ? 'main.php' : 'main-tree.php';
+        $template_file_name = ( $atts['visualization-mode'] == 'json-data' ) || ( empty( $atts['visualization-mode'] ) ) ? 'main.php' : 'main-tree.php'; //main-tree.php or main.bkp.php
 
         $tpl_path = '/wcpsbsc/short-code-wpsbsc-cpt/'.$template_file_name;
 
