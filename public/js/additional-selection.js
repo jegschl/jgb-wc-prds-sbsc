@@ -19,14 +19,22 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
 
     htmlTplWrapper = htmlTplWrapper.replace( "{{as-step-priority}}", fieldData['priorityInStep'] );
 
+    eventParamsPrepareFieldOptionHtmlTemplate.field = fieldData;
 
 	// unir todas las opciones disponibles en un solo string.
 	fieldOptions.forEach( (opt,i)=>{
+
+        eventParamsPrepareFieldOptionHtmlTemplate.option = opt;
+
         let optHtml = htmlTplOptions.replace("{{subopt-slug}}", opt['slug'] );
         optHtml = optHtml.replace("{{subopt-label}}", opt['label'] );
+        
+		eventParamsPrepareFieldOptionHtmlTemplate.htmlTpl = optHtml;
+		
+		document.dispatchEvent( jwpsbscPrepareFieldOptionHtmlTemplate );
 
 		optionsHRd += i>0 ? "\n" : '';
-		optionsHRd += optHtml;
+		optionsHRd += eventParamsPrepareFieldOptionHtmlTemplate.htmlTpl;
 	});
 
     

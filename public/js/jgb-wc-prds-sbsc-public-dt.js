@@ -31,6 +31,13 @@ const eventParamsPrepareFieldHtmlTemplate = {
 };
 const jwpsbscPrepareFieldHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldHtmlTemplate', {detail: eventParamsPrepareFieldHtmlTemplate});
 
+const eventParamsPrepareFieldOptionHtmlTemplate = {
+	'field': null,
+	'option': null,
+	'htmlTpl': null
+};
+const jwpsbscPrepareFieldOptionHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldOptionHtmlTemplate', {detail: eventParamsPrepareFieldHtmlTemplate});
+
 
 TAFFY.extend('max', function (column) {
 
@@ -316,10 +323,20 @@ function itemTypeFieldOptionsHtmlAssembly( fld ){
 
 	let optionsHRd = '';
 
+	eventParamsPrepareFieldOptionHtmlTemplate.field = fld;
+
 	// unir todas las opciones disponibles en un solo string.
 	fieldOptions.forEach( (opt,i)=>{
+
+		eventParamsPrepareFieldOptionHtmlTemplate.option = opt;
+		eventParamsPrepareFieldOptionHtmlTemplate.htmlTpl = JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['options'][ opt['slug'] ];
+		
+		document.dispatchEvent( jwpsbscPrepareFieldOptionHtmlTemplate );
+
 		optionsHRd += i>0 ? "\n" : '';
-		optionsHRd += JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['options'][ opt['slug'] ];
+		optionsHRd += eventParamsPrepareFieldOptionHtmlTemplate.htmlTpl;
+		optionsHRd;
+		
 	});
 
 	return JGB_WPSBSC_DATA['fieldsTemplates'][ fieldSlug ]['wrapper'][ fieldSlug ].replace("{{#radio-options}}", optionsHRd );
