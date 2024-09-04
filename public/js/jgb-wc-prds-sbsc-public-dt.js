@@ -36,7 +36,7 @@ const eventParamsPrepareFieldOptionHtmlTemplate = {
 	'option': null,
 	'htmlTpl': null
 };
-const jwpsbscPrepareFieldOptionHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldOptionHtmlTemplate', {detail: eventParamsPrepareFieldHtmlTemplate});
+const jwpsbscPrepareFieldOptionHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldOptionHtmlTemplate', {detail: eventParamsPrepareFieldOptionHtmlTemplate});
 
 
 TAFFY.extend('max', function (column) {
