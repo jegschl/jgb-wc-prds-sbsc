@@ -27,14 +27,16 @@ const jwpsbscSetFeatureValue = new CustomEvent('jwpsbscSetFeatureValue', {detail
 
 const eventParamsPrepareFieldHtmlTemplate = {
 	'field': null,
-	'htmlTpl': null
+	'htmlTpl': null,
+	'fieldType': null
 };
 const jwpsbscPrepareFieldHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldHtmlTemplate', {detail: eventParamsPrepareFieldHtmlTemplate});
 
 const eventParamsPrepareFieldOptionHtmlTemplate = {
 	'field': null,
 	'option': null,
-	'htmlTpl': null
+	'htmlTpl': null,
+	'fieldType': null
 };
 const jwpsbscPrepareFieldOptionHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldOptionHtmlTemplate', {detail: eventParamsPrepareFieldOptionHtmlTemplate});
 
@@ -324,6 +326,7 @@ function itemTypeFieldOptionsHtmlAssembly( fld ){
 	let optionsHRd = '';
 
 	eventParamsPrepareFieldOptionHtmlTemplate.field = fld;
+	eventParamsPrepareFieldOptionHtmlTemplate.fieldType = 'field';
 
 	// unir todas las opciones disponibles en un solo string.
 	fieldOptions.forEach( (opt,i)=>{
@@ -387,19 +390,23 @@ function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 	fieldsToRender.forEach( ( fld )=>{
 
 		let fieldWrapperTpl;
+
+		jwpsbscPrepareFieldHtmlTemplate.detail.field = fld;
 		
 		switch( fld['type'] ){
 
 			case 'field:additional-selection':
 				fieldWrapperTpl = itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step );
+				jwpsbscPrepareFieldHtmlTemplate.detail.fieldType = 'field:additional-select';
 				break;
 
 			default: // type = 'field'
 				fieldWrapperTpl = itemTypeFieldOptionsHtmlAssembly( fld );
+				jwpsbscPrepareFieldHtmlTemplate.detail.fieldType = 'field';
 
 		}
 		
-		jwpsbscPrepareFieldHtmlTemplate.detail.field = fld;
+		
 		jwpsbscPrepareFieldHtmlTemplate.detail.htmlTpl = fieldWrapperTpl;
 		
 		document.dispatchEvent( jwpsbscPrepareFieldHtmlTemplate );

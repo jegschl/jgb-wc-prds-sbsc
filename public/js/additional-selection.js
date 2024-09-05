@@ -20,6 +20,7 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
     htmlTplWrapper = htmlTplWrapper.replace( "{{as-step-priority}}", fieldData['priorityInStep'] );
 
     eventParamsPrepareFieldOptionHtmlTemplate.field = fieldData;
+    eventParamsPrepareFieldOptionHtmlTemplate.fieldType = 'field:additional-select';
 
 	// unir todas las opciones disponibles en un solo string.
 	fieldOptions.forEach( (opt,i)=>{
