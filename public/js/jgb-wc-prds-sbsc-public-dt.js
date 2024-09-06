@@ -396,13 +396,14 @@ function prepareTemplatesToRenderForFields( fieldsToRender, step ){
 		switch( fld['type'] ){
 
 			case 'field:additional-selection':
-				fieldWrapperTpl = itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step );
 				jwpsbscPrepareFieldHtmlTemplate.detail.fieldType = 'field:additional-select';
+				fieldWrapperTpl = itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step );
 				break;
 
 			default: // type = 'field'
-				fieldWrapperTpl = itemTypeFieldOptionsHtmlAssembly( fld );
 				jwpsbscPrepareFieldHtmlTemplate.detail.fieldType = 'field';
+				fieldWrapperTpl = itemTypeFieldOptionsHtmlAssembly( fld );
+				
 
 		}
 		
