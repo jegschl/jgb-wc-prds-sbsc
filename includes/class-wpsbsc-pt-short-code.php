@@ -214,7 +214,7 @@ class SBSCDefPTShortCode{
 
                         ob_start();
                        
-                        \load_template( $v, false, ['option' => $fld['options'][$fieldOptionKey] ] );
+                        \load_template( $v, false, ['option' => $fld['options'][$fieldOptionKey], 'field' => $fld ] );
                         
                         $tpls['options'][$k] = ob_get_clean();
 
