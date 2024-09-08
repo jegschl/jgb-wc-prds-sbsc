@@ -258,6 +258,33 @@ function get_fields_to_render( parentFVPath ){
 	return fieldsToRender;
 }
 
+function selectedFeaturesIsSeted( fieldData ){
+	let i;
+	let fid;
+
+	for(i=0; i<selectedFeatures.length; i++){
+		switch( fieldData['type'] ){
+			case 'field':
+				fid = fieldData.id;
+				break;
+			case 'field:additional-selection':
+				fid = fieldData.vcsItemId;
+				break;
+		}
+
+		if( selectedFeatures[i].fieldId == fid ){
+			if(  ( selectedFeatures[i].value != null ) 
+				 && ( selectedFeatures[i].valueRegId != null )
+				 && ( selectedFeatures[i].valueLabel != null ) 
+			){
+				return true;
+			}
+		}
+
+	}
+	return false;
+}
+
 function get_next_item_to_render( parentFVPath ){
 
 	let max_priority = null;
@@ -280,7 +307,7 @@ function get_next_item_to_render( parentFVPath ){
 
 	let itemsToRender = [];
 	[ ...fieldsToRender, ...additionalSelectionItemsToRender ].forEach( (r)=>{
-		if( r['priorityInStep'] == max_priority ){
+		if( ( r['priorityInStep'] == max_priority ) && !selectedFeaturesIsSeted( r ) ){
 			itemsToRender.push( r );
 		}
 	});
@@ -367,7 +394,7 @@ function itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step){
 
 	if( existHandlerFunction == 'function' ){
 
-		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOption'] );
+		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOptions'] );
 
 		return aohEval;
 
