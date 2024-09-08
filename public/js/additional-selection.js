@@ -7,17 +7,17 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
     let optionsHRd = '';
 
 
-    htmlTplWrapper = htmlTplWrapper.replace( "{{additional-selection-id}}", fieldData['vcsItemId'] );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{additional-selection-id}}", fieldData['vcsItemId'] );
 
-    htmlTplWrapper = htmlTplWrapper.replace( "{{additional-selection-slug}}", fieldData['slug'] );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{additional-selection-slug}}", fieldData['slug'] );
 
-    htmlTplWrapper = htmlTplWrapper.replace( "{{opt-slug}}", "additional-selection-" + fieldData['slug'] );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{opt-slug}}", "additional-selection-" + fieldData['slug'] );
     
-    htmlTplWrapper = htmlTplWrapper.replace( "{{additional-selection-label}}", fieldData['vcsItemLabel'] );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{additional-selection-label}}", fieldData['vcsItemLabel'] );
 
-    htmlTplWrapper = htmlTplWrapper.replace( "{{opt-label}}", 'Selecciona una opción' );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{opt-label}}", 'Selecciona una opción' );
 
-    htmlTplWrapper = htmlTplWrapper.replace( "{{as-step-priority}}", fieldData['priorityInStep'] );
+    htmlTplWrapper = htmlTplWrapper.replaceAll( "{{as-step-priority}}", fieldData['priorityInStep'] );
 
     eventParamsPrepareFieldOptionHtmlTemplate.field = fieldData;
     eventParamsPrepareFieldOptionHtmlTemplate.fieldType = 'field:additional-select';
@@ -27,8 +27,8 @@ function additionalSelectionAssemblyOptions( fvPath, fieldData, step, htmlTplWra
 
         eventParamsPrepareFieldOptionHtmlTemplate.option = opt;
 
-        let optHtml = htmlTplOptions.replace("{{subopt-slug}}", opt['slug'] );
-        optHtml = optHtml.replace("{{subopt-label}}", opt['label'] );
+        let optHtml = htmlTplOptions.replaceAll("{{subopt-slug}}", opt['slug'] );
+        optHtml = optHtml.replaceAll("{{subopt-label}}", opt['label'] );
         
 		eventParamsPrepareFieldOptionHtmlTemplate.htmlTpl = optHtml;
 		
