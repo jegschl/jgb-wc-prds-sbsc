@@ -3,7 +3,6 @@ let ppuMkrSlctr;
 let selectedFeatures = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
-let stepPriorityCheks = [];
 
 const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
@@ -368,7 +367,7 @@ function itemTypeFieldAdditionalSelectionOptionsHtmlAssembly( fld, step){
 
 	if( existHandlerFunction == 'function' ){
 
-		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOptions'] );
+		aohEval = window[ functionName ]( currentParentFVPath(), fld, step, fasTplInfo['htmlTplWrapper'], fasTplInfo['htmlTplOption'] );
 
 		return aohEval;
 
