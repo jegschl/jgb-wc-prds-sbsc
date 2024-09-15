@@ -16,6 +16,7 @@ $options = $wg->get_options();
         <td colspan="2" class="label"><?= $label_field ?> </td>
         </tr>
         
+        <?php do_action('jgb_wc_prds_sbsc_widget_render_before_radio_options', $wg); ?>
 
         {{#radio-options}}
 
