@@ -5,7 +5,7 @@
 
 <div class="cristal-selection main-container">
 
-	<?php do_action('jgb_wc_prds_sbsc_widget_render_before_fields_containers'); ?>
+	<?php do_action('jgb_wc_prds_sbsc_widget_render_before_fields_containers', $args); ?>
 		
 	<div class="left-container">
 
