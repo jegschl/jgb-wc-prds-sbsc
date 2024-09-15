@@ -890,18 +890,6 @@ function cpMatchs(){
 				$(evnt.target).closest('.help-box').addClass('hidden');
 			}
 		});
-
-		$('.step .help-link').each((i,e)=>{
-			$(e).off('click');
-			$(e).click((evnt)=>{
-				const hbDataIdToShow = $(evnt.target).data('show-hb-id');
-				const hbets = $('.help-box[data-hb-id="' + hbDataIdToShow + '"]');
-				if( $(hbets).hasClass('hidden') ){
-					$(hbets).removeClass('hidden');
-				}
-			})
-		});
-
 		
 
 	});
@@ -911,6 +899,20 @@ function cpMatchs(){
 		ppuMkrSlctr = '#pum-' + JGB_WPSBSC_DATA['popupMakerId'];
 
 		document.addEventListener('jwpsbscAfterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
+
+		document.addEventListener('jwpsbscAfterRenderStep', function(){
+			$('.step .help-link').each((i,e)=>{
+				$(e).off('click');
+				$(e).click((evnt)=>{
+					const hbDataIdToShow = $(evnt.target).data('show-hb-id');
+					const hbets = $('.help-box[data-hb-id="' + hbDataIdToShow + '"]');
+					if( $(hbets).hasClass('hidden') ){
+						$(hbets).removeClass('hidden');
+					}
+				})
+			});
+
+		} );
 
 		document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeField );
 
