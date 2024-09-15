@@ -4,20 +4,9 @@
 ?>
 
 <div class="cristal-selection main-container">
-	<div class="help-box hidden" data-hb-id="tipo-de-lente">
-		<div class="close-buton">X</div>
-		<div class="box-container">
-			<img src="http://verwell.local/wp-content/uploads/2024/03/help-link-tipos_de_lentes-686x386-1.png">
-		</div>
-	</div>
 
-	<div class="help-box hidden" data-hb-id="material-cristal">
-		<div class="close-buton">X</div>
-		<div class="box-container">
-			<img src="http://verwell.local/wp-content/uploads/2024/03/help-link-materiales_de_crsitales-800x450-1.png">
-		</div>
-	</div>
-	
+	<?php do_action('jgb_wc_prds_sbsc_widget_render_before_fields_containers'); ?>
+		
 	<div class="left-container">
 
 		<div class="main-title"><?= $main_title ?></div>
