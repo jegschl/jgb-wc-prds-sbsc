@@ -542,7 +542,7 @@ function desplegarSFs(){
 	})( jQuery );
 }
 
-function getItmFromVcsIemsMatchsBySlug( vcims, slug ){
+function getItmFromVcsItemsMatchsBySlug( vcims, slug ){
 	let i;
 	for(i=0; i<vcims.length; i++){
 		if( vcims[i].slug == slug ){
@@ -566,7 +566,7 @@ function desplegarPrice(){
 		[cp,i] = cpMatchs();
 
 		if( cp != null){ 
-			priceItem = getItmFromVcsIemsMatchsBySlug( cp, 'precio-venta' );
+			priceItem = getItmFromVcsItemsMatchsBySlug( cp, 'precio-venta' );
 			if( priceItem != null ){
 				price = priceItem['data'];
 			}
