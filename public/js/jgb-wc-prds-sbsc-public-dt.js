@@ -1,6 +1,7 @@
 let swiper;
 let ppuMkrSlctr;
 let selectedFeatures = [];
+let optionsData = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
 
@@ -553,7 +554,7 @@ function getItmFromVcsItemsMatchsBySlug( vcims, slug ){
 
 }
 
-function desplegarPrice(){
+function desplegarPrice( ru66 = false){
 	(function( $ ) {
 
 		const sfcSlctr = ".main-container .price-container";
@@ -562,13 +563,21 @@ function desplegarPrice(){
 		let intf = null;
 		let cp;
 		let priceItem;
+		let adicionalRangoSobre66;
 		
-		[cp,i] = cpMatchs();
+		[cp,i] = loadCUrrentOptionData();
 
 		if( cp != null){ 
 			priceItem = getItmFromVcsItemsMatchsBySlug( cp, 'precio-venta' );
 			if( priceItem != null ){
 				price = priceItem['data'];
+				if( ru66 ){
+					adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
+					if( adicionalRangoSobre66 != null ){
+						price = parseInt(price) + parseInt( adicionalRangoSobre66['data'] );
+						price = price.toString();
+					}
+				}
 			}
 		}
 
@@ -617,7 +626,13 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
 			desplegarSFs();
-			desplegarPrice();
+			
+			if( $(fatherFieldEl).find('.checkbox-ru66 input[type="checkbox"]:checked').length > 0 ){
+				desplegarPrice( true );
+			} else {
+				desplegarPrice( false );
+			}
+			
 			document.addEventListener('jwpsbscAfterRenderStep', swiperNextSlide );
 			renderNextStep();
 			//checkButtonsNavigationStatus();
@@ -746,9 +761,10 @@ function getFieldFromVCSItem( VCSItem ){
 	return null;
 }
 
-function cpMatchs(){
+function loadCUrrentOptionData(){
 
 	let i = 0;
+	let j = 0;
 	let vlsIdsCmbnsStr;
 	let r;
 	let choiceCmbntId;
@@ -756,6 +772,10 @@ function cpMatchs(){
 	let curItem = {};
 
 	vlsIdsCmbnsStr = currentParentFVPath();
+
+	if( vlsIdsCmbnsStr.split(",").length == 1 ){
+		optionsData = [];
+	}
 
 	r = dtChoicesCombinations({vls_ids_combinations_string:vlsIdsCmbnsStr}).first();
 
@@ -786,10 +806,23 @@ function cpMatchs(){
 					
 			}
 
+			let optDataUpdtd = false;
+			for( j=0; j<optionsData.length; j++ ){
+				if( optionsData[j].id == curItem['id'] ){
+					optionsData[j] = curItem;
+					optDataUpdtd = true;
+					break;
+				}
+			}
+
+			if( !optDataUpdtd ){
+				optionsData.push( curItem );
+			}
+
 			itemsData.push( curItem );
 
 		}
-
+		optionsData = itemsData;
 		return [itemsData,choiceCmbntId];
 		
 	}	
