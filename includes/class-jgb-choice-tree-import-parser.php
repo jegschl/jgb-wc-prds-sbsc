@@ -829,19 +829,7 @@ class JGBWPSChoiceTreeImportParser{
 
     function parse_first_column( $data ){
 
-        $fld_parameter = null;
-
-        $fld_sub_param = null;
-
-        $dataArd = explode(':',$data);
-        
-        if( isset( $dataArd[0] ) ){
-            $fld_parameter = $dataArd[0];
-        }
-
-        if( isset( $dataArd[1] ) ){
-            $fld_sub_param = $dataArd[1];
-        }
+        [$fld_parameter, $fld_sub_param] = explode(':',$data);
 
         if( in_array( $fld_parameter, $this->allowedFldParameters ) ){
             $this->currentReadingParameter = $fld_parameter;
@@ -853,11 +841,8 @@ class JGBWPSChoiceTreeImportParser{
         $this->allowedFldSubParameters = $this->get_allowed_sub_parameters( $fld_parameter );
 
         if( 
-            !is_null( $fld_sub_param ) 
-            && ( 
-                ( in_array( $fld_sub_param, $this->allowedFldSubParameters ) )
-                || ( empty( $fld_sub_param) && empty( $this->allowedFldSubParameters ) ) 
-            )
+            ( in_array( $fld_sub_param, $this->allowedFldSubParameters ) )
+            || ( empty( $fld_sub_param) && empty( $this->allowedFldSubParameters ) ) 
         ){
             $this->currentReadingSubParameter = $fld_sub_param;
         } else {
