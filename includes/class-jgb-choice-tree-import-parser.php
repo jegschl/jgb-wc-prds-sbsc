@@ -472,7 +472,7 @@ class JGBWPSChoiceTreeImportParser{
         } else {
 
             if( ! isset( $this->slugsGertnKeyCache[$table_nm] ) ){
-                $this->slugsGertnKeyCache[$table_nm] = 0;
+                $this->slugsGertnKeyCache[$table_nm] = [];
             }
     
             if( ! isset( $this->slugsGertnKeyCache[$table_nm][ $nv['slug'] ] ) ){
