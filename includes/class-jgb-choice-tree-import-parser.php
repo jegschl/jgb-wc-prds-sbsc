@@ -815,7 +815,7 @@ class JGBWPSChoiceTreeImportParser{
 
     function store_vcs_in_process(){
         
-        if( count( $this->vcsInProcess ) ){
+        if( !is_null( $this->vcsInProcess ) && is_countable( $this->vcsInProcess ) && count( $this->vcsInProcess ) ){
             
             foreach( $this->vcsInProcess as $k => $vcsIP ){
                 $this->valuesCombinationSets[$k][] = $vcsIP;
