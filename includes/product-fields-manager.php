@@ -38,6 +38,7 @@ class ProductFieldsManager{
                 $pfdata_bs64_encoded = sanitize_text_field($_POST[ $pf ]);
                 $pfdata_json_encoded = mb_convert_encoding( rawurldecode( base64_decode($pfdata_bs64_encoded) ), 'UTF-8', 'UTF-8' );
                 $pfdata = json_decode($pfdata_json_encoded, true);
+                $product = wc_get_product( $_POST['add-to-cart'] );
                 foreach( $pfdata as $v ){
                     $cart_item_data[ $v['field'] ] = [
                         'title' => $v['label'],
@@ -45,6 +46,14 @@ class ProductFieldsManager{
                     ];
                     if( $v['field'] == 'precio' ){
                         $cart_item_data[ $v['field'] ]['value'] = $v['value'];
+
+                        $precio_montura = $product->get_price();
+                        $precio_montura = number_format( $precio_montura, 0, ',', '.' );
+                        $cart_item_data[ 'precio-montura' ] = [
+                            'title' => 'Precio Montura',
+                            'value_label' => '$' . $precio_montura
+                        ];
+                        $this->items_data_keys[] = 'precio-montura';
                     }
                     $this->items_data_keys[] = $v['field'];
                 }
