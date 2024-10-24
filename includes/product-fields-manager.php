@@ -74,11 +74,20 @@ class ProductFieldsManager{
             
         }
         
-        /* foreach( $this->product_fields as $pf ){
-            if(!empty($values[ $pf ])) {
-                $item->add_meta_data( $pf , $values[ $pf ]);
+    }
+
+    public function poduct_item_data($item_data, $cart_item){
+        foreach( $this->items_data_keys as $k ){
+            if(isset( $cart_item[ $k ] ) && !empty($cart_item[ $k ])) {
+                $pf = $cart_item[ $k ];
+                $item_data[] = [
+                    'key' => $pf['title'],
+                    'value' => $pf['value_label']
+                ];
             }
-        } */
+        }
+
+        return $item_data;
     }
 
 }
