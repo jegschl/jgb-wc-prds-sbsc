@@ -1,5 +1,7 @@
 <?php
 namespace JGB\WPSBSC;
+
+define( 'JGB_WPSBSC_PROD_DATA_CONFIG_CID','jwps_prod_data_cfg' );
 class ProductFieldsManager{
     protected $product_fields;
 
@@ -46,10 +48,26 @@ class ProductFieldsManager{
                     }
                     $this->items_data_keys[] = $v['field'];
                 }
+
+                $cart_item_data[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] = [
+                    'items_data_keys' => $this->items_data_keys
+                ];
             }
         }
 
         return $cart_item_data;
+    }
+
+    public function reload_items_data_keys( $visible, $cart_item_data, $cart_item){
+        
+        if( isset( $cart_item_data[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
+            && is_array( $cart_item_data[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
+            && ( count( $cart_item_data[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) > 0 )
+        ){
+            $this->items_data_keys = $cart_item_data[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'];
+        }
+
+        return $visible;
     }
 
     public function save_order_line_item($item, $cart_item_key, $values, $order) {
