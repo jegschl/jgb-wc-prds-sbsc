@@ -3,18 +3,17 @@ namespace JGB\WPSBSC;
 class ProductFieldsManager{
     protected $product_fields;
 
+    protected $items_data_keys;
+
     function __construct()
     {
         $this->set_product_fields();
+        $this->items_data_keys = [];
     }
 
     public function set_product_fields(){
         $pf = [
-            'receta',
-            'tipo-de-lente',
-			'material-lente',
-			'tratamiento-cristal',
-            'precio'
+            'jwps-prod-data'
         ];
 
         $this->product_fields = apply_filters('jgb/wpsbsc/setProductFields',$pf);
@@ -32,8 +31,21 @@ class ProductFieldsManager{
 
     public function process_product_fields($cart_item_data){
         foreach( $this->product_fields as $pf ){
-            if(!empty($_POST[ $pf ])) {
-                $cart_item_data[ $pf ] = sanitize_text_field($_POST[ $pf ]);
+            if(isset( $_POST[ $pf ] ) && !empty($_POST[ $pf ])) {
+                
+                $pfdata_bs64_encoded = sanitize_text_field($_POST[ $pf ]);
+                $pfdata_json_encoded = mb_convert_encoding( rawurldecode( base64_decode($pfdata_bs64_encoded) ), 'UTF-8', 'UTF-8' );
+                $pfdata = json_decode($pfdata_json_encoded, true);
+                foreach( $pfdata as $v ){
+                    $cart_item_data[ $v['field'] ] = [
+                        'title' => $v['label'],
+                        'value_label' => $v['valueLabel']
+                    ];
+                    if( $v['field'] == 'precio' ){
+                        $cart_item_data[ $v['field'] ]['value'] = $v['value'];
+                    }
+                    $this->items_data_keys[] = $v['field'];
+                }
             }
         }
 
@@ -41,7 +53,7 @@ class ProductFieldsManager{
     }
 
     public function save_order_line_item($item, $cart_item_key, $values, $order) {
-        foreach( $this->product_fields as $pf ){
+        foreach( $this->items_data_keys as $pf ){
             if(!empty($values[ $pf ])) {
                 $item->add_meta_data( $pf , $values[ $pf ]);
             }
@@ -56,7 +68,8 @@ class ProductFieldsManager{
         foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
             if( isset( $cart_item['precio'] ) ){
                 $prod_price = $cart_item['data']->get_price();
-                $cart_item['data']->set_price( $prod_price + $cart_item[ 'precio' ] );
+                $cart_item['data']->set_price( $prod_price + $cart_item[ 'precio' ]['value'] );
+                return;
             }
             
         }

@@ -949,6 +949,22 @@ function loadCUrrentOptionData(){
 
 		document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeField );
 
+		$('.add-crystal-to-cart').click((evnt)=>{
+			evnt.preventDefault();
+			const priceField = {
+				'field': 'precio',
+				'label': 'Precio cristales',
+				'valueLabel': $('.cristal-selection.main-container .price-container').text(),
+				'value': null,
+			};
+			priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
+			const productData = [ ...selectedFeatures, {...priceField} ];
+			
+			let jwpsProdData = JSON.stringify( productData );
+			jwpsProdData = btoa(encodeURIComponent( jwpsProdData ));
+			$('form.cart input[name="jwps-prod-data"]').val( jwpsProdData );
+			$('form.cart button.single_add_to_cart_button.button.alt').trigger('click');
+		});
 	});
 
 })( jQuery );
