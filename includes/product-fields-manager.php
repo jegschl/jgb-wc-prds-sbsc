@@ -117,4 +117,24 @@ class ProductFieldsManager{
         return $item_data;
     }
 
+    public function poduct_item_data_on_cart($name, $cart_item, $cart_item_key){
+        return $name;
+        if( is_array( $this->items_data_keys ) && ( count( $this->items_data_keys ) > 0 ) ){
+            $name .= '<br>';
+            $i = 0;
+            $separator = ' | ';
+            $itms_dt_str = '';
+            foreach( $this->items_data_keys as $k ){
+                if(isset( $cart_item[ $k ] ) && !empty($cart_item[ $k ])) {
+                    $pf = $cart_item[ $k ];
+                    $itms_dt_str .= $i > 0 ? $separator : '';  
+                    $itms_dt_str .= "<span class=\"on-cart-itm-dt-title\">{$pf['title']}:</span> <span class=\"on-cart-itm-dt-value\">{$pf['value_label']}</span>";
+                }
+                $i++;
+            }
+            $name .= $itms_dt_str;
+        }
+        return $name;
+    }
+
 }
