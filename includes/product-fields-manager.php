@@ -80,10 +80,34 @@ class ProductFieldsManager{
     }
 
     public function save_order_line_item($item, $cart_item_key, $values, $order) {
+        if( isset( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
+            && is_array( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
+            && ( count( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) > 0 )
+            && isset( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'] )
+            && is_array( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'] )
+            && ( count( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'] ) > 0 )
+        ){
+            $jwpdcc = [];
+            $this->items_data_keys = $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'];
+        }
         foreach( $this->items_data_keys as $pf ){
-            if(!empty($values[ $pf ])) {
-                $item->add_meta_data( $pf , $values[ $pf ]);
+            if(
+                   isset( $values[ $pf ] )
+                && !empty( $values[ $pf ] )
+                && is_array( $values[ $pf ] )
+                && isset( $values[ $pf ]['value_label'] )
+                && !empty( $values[ $pf ]['value_label'] )
+            ){
+                $jwpdcc[ $pf ] = [
+                    'title' => $values[ $pf ]['title'],
+                    'value' => $values[ $pf ]['value_label']
+                ];
+                //$item->add_meta_data( $pf , $values[ $pf ]);
             }
+        }
+
+        if( count( $jwpdcc ) > 0 ){
+            $item->add_meta_data( JGB_WPSBSC_PROD_DATA_CONFIG_CID , json_encode( $jwpdcc ) );
         }
     }
 
