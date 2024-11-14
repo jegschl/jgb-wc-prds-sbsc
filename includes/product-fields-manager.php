@@ -79,6 +79,24 @@ class ProductFieldsManager{
         return $visible;
     }
 
+    public function display_order_item_meta_key($display_key, $meta, $item ){
+        if( $meta->key == JGB_WPSBSC_PROD_DATA_CONFIG_CID ){
+            $display_key = "Información de cristales";
+        }
+        return $display_key;
+    }
+
+    public function display_order_item_meta_value($display_value, $meta, $item ){
+        if( $meta->key == JGB_WPSBSC_PROD_DATA_CONFIG_CID ){
+            $display_value = '';
+            $jwpdcc = json_decode( $meta->value, true );
+            foreach( $jwpdcc as $k => $v ){
+                $display_value .= "<span class=\"jwpdcc-title\">{$v['title']}:</span> <span class=\"jwpdcc-value\">{$v['value']}</span><br>";
+            }
+        }
+        return $display_value;
+    }
+
     public function save_order_line_item($item, $cart_item_key, $values, $order) {
         if( isset( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
             && is_array( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ] ) 
@@ -128,6 +146,11 @@ class ProductFieldsManager{
     }
 
     public function poduct_item_data($item_data, $cart_item){
+        
+        if( isset( $_REQUEST['wc-ajax'] ) && $_REQUEST['wc-ajax'] == 'update_order_review' ){
+            $this->reload_items_data_keys( true, $cart_item, null );
+        }
+        
         foreach( $this->items_data_keys as $k ){
             if(isset( $cart_item[ $k ] ) && !empty($cart_item[ $k ])) {
                 $pf = $cart_item[ $k ];

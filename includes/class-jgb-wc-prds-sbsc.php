@@ -258,6 +258,9 @@ class Jgb_Wc_Prds_Sbsc {
 		$this->loader->add_filter('woocommerce_get_item_data', $this->ProductFieldsManager, 'poduct_item_data', 10, 2);
 		$this->loader->add_action( 'woocommerce_checkout_create_order_line_item', $this->ProductFieldsManager, 'save_order_line_item', 10, 4 );
 		$this->loader->add_action( 'woocommerce_before_calculate_totals', $this->ProductFieldsManager, 'update_product_price' );
+
+		$this->loader->add_filter( 'woocommerce_order_item_display_meta_key', $this->ProductFieldsManager, 'display_order_item_meta_key', 10, 3);
+		$this->loader->add_filter( 'woocommerce_order_item_display_meta_value', $this->ProductFieldsManager, 'display_order_item_meta_value', 10, 3);
 	}
 
 
