@@ -184,7 +184,7 @@
 
 .help-box{
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 1);
     border: black 1px solid;
     border-radius: 3px;
     padding: 10px;
@@ -194,7 +194,11 @@
 
 .help-box .close-buton{
     float:right;
-    
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 5px 8px
 }
 
 
