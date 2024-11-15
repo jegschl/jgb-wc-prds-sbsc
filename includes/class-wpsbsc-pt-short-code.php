@@ -345,6 +345,10 @@ class SBSCDefPTShortCode{
 
     function enqueue_scripts( &$atts ){
 
+        global $post;
+
+        $product = wc_get_product( $post->ID );
+
         $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
 
         $opts = get_post_meta( $atts['id'], JGB_WPSBSC_CPT_MKNM_OPTIONS, true );
@@ -354,7 +358,10 @@ class SBSCDefPTShortCode{
         $atts['product-categories'] = $opts['product-categories'];
 
         $script_array_info = [
-            'visualizationMode' => $opts['visualization-mode']
+            'visualizationMode' => $opts['visualization-mode'],
+            'productId' => $product->get_id(),
+            'productSKU' => $product->get_sku(),
+            'productImgUrl' => wp_get_attachment_image_url( $product->get_image_id(), 'full' )
         ];
 
         if( $opts['visualization-mode'] == 'tree-choices' ){

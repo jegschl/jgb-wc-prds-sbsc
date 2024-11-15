@@ -1,6 +1,9 @@
 <?php 
+	global $post;
+	$product = wc_get_product( $post->ID );
 	$main_title = 'TUS CRISTALES'; //$args['main_title'];;
 	$steps = $args['steps'];
+	$product_img_url = wp_get_attachment_image_url( $product->get_image_id(), 'full' );
 ?>
 
 <div class="cristal-selection main-container">
@@ -39,7 +42,7 @@
 			<div class="SKU"><?= $args['sku'] ?></div>
 		</div>
 		<div class="photo-container">
-			<img src="http://verwell.local/wp-content/uploads/2021/03/E6190002.jpg" class="spf">
+			<img src="<?= $product_img_url ?>" class="spf">
 		</div>
 		<div class="primary-product-details">
 			<div class="title-1">Armazón</div>
