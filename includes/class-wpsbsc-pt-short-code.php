@@ -22,8 +22,6 @@ class SBSCDefPTShortCode{
 
         $this->tplsPaths['plugin'] = $this->plg_path . "public/partials/short-code-wpsbsc-cpt/";
 
-        $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
-
         add_shortcode( JGB_WPSBSC_SC_NM_SBSC_DEFINITION_CPT,[ $this, 'execute' ] );
 
         add_action('JGB/WPSBSC/render_fields',[$this,'render_fields']);
@@ -32,13 +30,24 @@ class SBSCDefPTShortCode{
 
     }
 
+    private function is_product_in_category_or_child($product_id, $category_id) {
+        // Obtener las categorías hijas
+        $child_categories = get_term_children($category_id, 'product_cat');
+        $categories_to_check = array_merge([$category_id], $child_categories);
+    
+        // Verificar si el producto está en alguna de estas categorías
+        $has_term = has_term($categories_to_check, 'product_cat', $product_id);
+        return $has_term;
+    }
+
     public function render_button_crystal_selection() {
-        $pm_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
+        
         ?>
         <div class="button-select-crystals">
-            <button class="popmake-<?= $pm_id ?> pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
+            <button class="popmake-<?= $this->popup_maker_id ?> pum-trigger" style="cursor: pointer;">Seleccionar cristales</button>
         </div>
         <?php
+        
     }
     
 
@@ -349,7 +358,24 @@ class SBSCDefPTShortCode{
 
         $product = wc_get_product( $post->ID );
 
-        $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', '22562' );
+        $wpsbsc_posts = SBSCDefinitionPostType::get_all_post_meta_from_cpt();
+        $wpsbsc_posts_on_product_allowed = false;
+        foreach( $wpsbsc_posts as $wpsbsc_id => $wpsbsc_post ){
+            
+            $opts = unserialize( $wpsbsc_post['meta'][ JGB_WPSBSC_CPT_MKNM_OPTIONS ][0]);
+            
+            if( $this->is_product_in_category_or_child( $product->get_id(), $opts['product-categories'] ) ){
+                $this->popup_maker_id = apply_filters('JGB/WPSBSC/popupmaker_popup_id', $opts['popup-id'] );
+                $wpsbsc_posts_on_product_allowed = $wpsbsc_id == $atts['id'];
+                break;
+            }
+
+        }
+
+        if( !$wpsbsc_posts_on_product_allowed ){
+            return;
+        }
+                
 
         $opts = get_post_meta( $atts['id'], JGB_WPSBSC_CPT_MKNM_OPTIONS, true );
 

@@ -216,6 +216,21 @@ class SBSCDefinitionPostType{
                 ?>
             </select>
         </div>
+
+        <div id="popupmaker-selector">
+            <select id="popupmaker-select" name="popup-id">
+                <option value="0">Seleccionar popup</option>
+                <?php
+                    $popups = get_posts([
+                        'post_type' => 'popup',
+                        'posts_per_page' => -1
+                    ]);
+                    foreach( $popups as $popup ){
+                        $selected = $opts['popup-id'] == $popup->ID ? 'selected' : '';
+                        echo '<option value="' . $popup->ID . '" '.$selected.'>' . $popup->post_title . '</option>';
+                    }
+                ?>
+            </select>
         <?php
 
     }
@@ -232,11 +247,38 @@ class SBSCDefinitionPostType{
 
             $opts = [
                 'visualization-mode' => $_POST['visualization-mode'],
-                'product-categories' => $_POST['product-category']
+                'product-categories' => $_POST['product-category'],
+                'popup-id'           => $_POST['popup-id']
             ];
             update_post_meta( $post_id, JGB_WPSBSC_CPT_MKNM_OPTIONS, $opts );
 
             add_action('save_post', [ $this, 'save_post' ]);
         }
+    }
+
+    public static function get_all_post_meta_from_cpt() {
+        
+    
+        // Configurar los argumentos para obtener los posts
+        $args = array(
+            'post_type'      => JGB_WPSBSC_CPT_NM_SBSC_DEFINITION,
+            'post_status'    => 'publish', // Solo posts publicados
+            'numberposts'    => -1,        // Obtener todos los posts
+        );
+    
+        // Obtener los posts
+        $posts = get_posts($args);
+        $posts_meta = [];
+    
+        // Recorrer los posts y obtener los meta datos
+        foreach ($posts as $post) {
+            $post_meta = get_post_meta($post->ID); // Obtiene todos los metadatos del post
+            $posts_meta[$post->ID] = [
+                'post' => $post,         // Información del post
+                'meta' => $post_meta,    // Metadatos asociados al post
+            ];
+        }
+    
+        return $posts_meta;
     }
 }
