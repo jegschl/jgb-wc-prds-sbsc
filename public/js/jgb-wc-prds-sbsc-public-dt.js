@@ -554,6 +554,36 @@ function getItmFromVcsItemsMatchsBySlug( vcims, slug ){
 
 }
 
+function setFeatureValueForFieldTypeFieldData( eventSetFeatureValue ){
+
+    //fieldId, fieldSlug, valueSlug, valueLabel, valueRegId, fieldLabel, itemPriority
+    if( eventSetFeatureValue.detail.fieldType != 'field:data' ){
+        return;
+    }
+
+  let dataItemExist;
+
+  dataItemExist = dataItemCheckInFeatures( eventSetFeatureValue.detail.field );
+  if( dataItemExist == null ){
+    selectedFeatures.push({
+      'fieldId': eventSetFeatureValue.detail.fieldId,
+      'field': eventSetFeatureValue.detail.field,
+      'fieldType': eventSetFeatureValue.detail.fieldType,
+      'label':  eventSetFeatureValue.detail.label,
+      'value': eventSetFeatureValue.detail.value,
+      'valueLabel': eventSetFeatureValue.detail.valueLabel,
+      'valueRegId': eventSetFeatureValue.detail.valueRegId,
+      'priorityInStep': eventSetFeatureValue.detail.priorityInStep,
+      'stepOnStore': swiper.activeIndex
+    });
+    dataItemExist = selectedFeatures.length - 1;
+  } else {
+    selectedFeatures[dataItemExist].value = eventSetFeatureValue.detail.value;
+    selectedFeatures[dataItemExist].valueLabel = eventSetFeatureValue.detail.valueLabel;
+    selectedFeatures[dataItemExist].valueRegId = eventSetFeatureValue.detail.valueRegId;
+  }
+}
+
 function desplegarPrice( ru66 = false){
 	(function( $ ) {
 
@@ -571,13 +601,16 @@ function desplegarPrice( ru66 = false){
 			priceItem = getItmFromVcsItemsMatchsBySlug( cp, 'precio-venta' );
 			if( priceItem != null ){
 				price = priceItem['data'];
+				adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
 				if( ru66 ){
-					adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
+					
 					if( adicionalRangoSobre66 != null ){
 						price = parseInt(price) + parseInt( adicionalRangoSobre66['data'] );
 						price = price.toString();
-					}
-				}
+
+					} 
+
+				} 
 			}
 		}
 
@@ -610,7 +643,14 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			const fieldId = $(fatherFieldEl).data('field-id');
 			const fieldSlug = getFieldSlugById( fieldId );
 			const valueSelected = $(fatherEl).find('input[type="radio"]').val();
-			const valueLabel = $(fatherEl).find('label').text();
+			let valueLabel;
+			const labelElements = $(fatherEl).find('label');
+			
+			if( labelElements.length > 0 ){
+				valueLabel = $(labelElements[0]).text();
+			} else {
+			 	valueLabel = $(labelElements).text();
+			}
 			const valueRegId = $(fatherEl).closest('td.value').data('reg-val-id');
 
 			if( (fatherEl.length!=undefined) && fatherEl.length > 0 ){
@@ -625,9 +665,47 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
+
+			let cp, i;
+			let adicionalRangoSobre66;
+			[cp,i] = loadCUrrentOptionData();
+			if( cp != null ){
+				
+				adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
+				if(    ( adicionalRangoSobre66 != null )
+					&& ( $(fatherFieldEl).find('.checkbox-ru66 input[type="checkbox"]:checked').length > 0 ) 
+				){
+
+					eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
+					eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
+					eventParamsFeatureValue['value'] = 'si';
+					eventParamsFeatureValue['valueLabel'] = 'Si';
+					eventParamsFeatureValue['valueRegId'] = null;
+					eventParamsFeatureValue['fieldType'] = "field:data";
+					eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
+					eventParamsFeatureValue['priorityInStep'] = 99;
+					eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
+					
+						
+				} else {
+					eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
+					eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
+					eventParamsFeatureValue['value'] = 'no';
+					eventParamsFeatureValue['valueLabel'] = 'No';
+					eventParamsFeatureValue['valueRegId'] = null;
+					eventParamsFeatureValue['fieldType'] = "field:data";
+					eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
+					eventParamsFeatureValue['priorityInStep'] = 99;
+					eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
+				}
+				setFeatureValueForFieldTypeFieldData( {detail: eventParamsFeatureValue} );
+				
+			}
+			
 			desplegarSFs();
 			
 			if( $(fatherFieldEl).find('.checkbox-ru66 input[type="checkbox"]:checked').length > 0 ){
+				
 				desplegarPrice( true );
 			} else {
 				desplegarPrice( false );
@@ -701,6 +779,16 @@ function vcsItemCheckInFeatures( slug ){
 	let i;
 	for(i=0; i<selectedFeatures.length; i++){
 		if( ( selectedFeatures[i].field == slug ) && ( selectedFeatures[i].fieldType == 'field:additional-select' ) ){
+			return i;
+		}
+	}
+	return null;
+}
+
+function dataItemCheckInFeatures( slug ){
+	let i;
+	for(i=0; i<selectedFeatures.length; i++){
+		if( ( selectedFeatures[i].field == slug ) && ( selectedFeatures[i].fieldType == 'field:data' ) ){
 			return i;
 		}
 	}
