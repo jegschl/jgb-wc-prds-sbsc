@@ -125,8 +125,10 @@ function get_first_item_to_render(){
 	const priorities = dtFields().order('priority_in_step').distinct('priority_in_step');
 
 	const options = []; 
+
+	const rawData = dtChoicesAvailables({parents_fv_path:null}).get().sort( (a, b) => parseInt(a.id) - parseInt(b.id) );
 	
-	dtChoicesAvailables({parents_fv_path:null}).each(function(record){
+	rawData.forEach(function(record){
 		
 		const choice = {
 			id: record['id'],
@@ -519,7 +521,7 @@ function renderNextStep(){
 }
 
 function removeSlidesFrom( index ){
-	let i = maxStepIndex;
+	let i = swiper.slides.length;
 	for(i; i >= index; i--){
 		swiper.removeSlide(i);
 	}
