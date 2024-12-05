@@ -439,7 +439,11 @@ class JGBWPSChoiceTreeImportParser{
 
         $query = "SELECT id, selectable_value_slug as slug, selectable_value_label as label FROM $table_nm ";
         $query .= "WHERE post_id = {$this->postId} ";
-        $query .= "AND parents_fv_path = '{$this->parentFVPath}' ";
+        if( empty( $this->parentFVPath)){
+            $query .= "AND parents_fv_path IS NULL ";
+        } else {
+            $query .= "AND parents_fv_path = '{$this->parentFVPath}' ";
+        }
         $query .= "AND selectable_value_slug REGEXP '^{$base_slug}(-[1-9][0-9]*)?$'";
 
         $rows = $wpdb->get_results( $query, ARRAY_A );
