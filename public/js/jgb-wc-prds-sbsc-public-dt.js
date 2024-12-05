@@ -688,17 +688,23 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 					
 						
 				} else {
-					eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
-					eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
-					eventParamsFeatureValue['value'] = 'no';
-					eventParamsFeatureValue['valueLabel'] = 'No';
-					eventParamsFeatureValue['valueRegId'] = null;
-					eventParamsFeatureValue['fieldType'] = "field:data";
-					eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
-					eventParamsFeatureValue['priorityInStep'] = 99;
-					eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
+					if( adicionalRangoSobre66 != null ){
+						eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
+						eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
+						eventParamsFeatureValue['value'] = 'no';
+						eventParamsFeatureValue['valueLabel'] = 'No';
+						eventParamsFeatureValue['valueRegId'] = null;
+						eventParamsFeatureValue['fieldType'] = "field:data";
+						eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
+						eventParamsFeatureValue['priorityInStep'] = 99;
+						eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
+					}
 				}
-				setFeatureValueForFieldTypeFieldData( {detail: eventParamsFeatureValue} );
+
+				if( adicionalRangoSobre66 != null ){
+					setFeatureValueForFieldTypeFieldData( {detail: eventParamsFeatureValue} );
+				}
+				
 				
 			}
 			
