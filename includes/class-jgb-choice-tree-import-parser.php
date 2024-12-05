@@ -494,7 +494,8 @@ class JGBWPSChoiceTreeImportParser{
                 'selectable_value_label'=> trim( $nv['label'] ),
                 'parent_field_id' => $parent_field_id,
                 'parent_on_browser_selected_slug_value' => $nv['parent']['value_slug'],
-                'parents_fv_path' => $nv['parents_fv_path']
+                'parents_fv_path' => $nv['parents_fv_path'],
+                'arvl' => json_encode( $nv['arvl'] )
             ];
     
             if( $wpdb->insert(
@@ -610,7 +611,18 @@ class JGBWPSChoiceTreeImportParser{
         
         $nv = [];
 
+        $array_element_separator = apply_filters( 'JGB/wpsbsc/choice_tree_import_item/type_radio_options_array_separator', '/' );
         
+        $posible_array = explode( $array_element_separator, $data );
+
+        $array_values = [];
+        if( count( $posible_array ) > 1 ){
+            $array_values = array_diff_key( $posible_array, [0] );
+            foreach( $array_values as $k => $v ){
+                $array_values[$k] = trim( $v );
+            }
+            $data = trim($posible_array[0]);
+        }
         
         $this->currentValueSlugInVTM = sanitize_title( $data );
 
@@ -621,6 +633,8 @@ class JGBWPSChoiceTreeImportParser{
             $nv['label'] = $data;
         
             $nv['slug'] = sanitize_title( $data );
+
+            $nv['arvl'] = $array_values;
             
             if( !is_null( $this->previousValueSlugRoSNotMultiple ) && !is_null( $this->previousFieldSlugRoSNotMultiple ) ){
                 
