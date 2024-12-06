@@ -42,13 +42,13 @@
 			<div class="SKU"><?= $args['sku'] ?></div>
 		</div>
 		<div class="photo-container">
-			<img src="<?= $product_img_url ?>" class="spf">
+			<img src="<?= $product_img_url ?>"  class="spf">
 		</div>
 		<div class="primary-product-details">
 			<div class="title-1">ARMAZÓN</div>
 			<div class="empty-1"></div>
 			<div class="brand">
-				<img src="http://verwell.local/wp-content/uploads/2023/09/logo-verwell.png" width="120px">
+				<img src="<?= site_url( "/wp-content/uploads/2023/09/logo-verwell.png" ) ?>" width="120px">
 			</div>
 		</div>
 		<div class="selected-features-container">
