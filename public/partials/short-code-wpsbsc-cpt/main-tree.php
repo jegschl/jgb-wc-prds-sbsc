@@ -26,7 +26,7 @@
 			
 
 		</div>
-		<div>x</div>
+
 		<div class="nav-buttons">
 							
 			<div class="forward">Volver</div>
@@ -35,6 +35,7 @@
 			
 		</div>
 	</div>
+	
 	<div class="right-container">
 		<div class="header">
 			<div class="title-1">TU SELECCIÓN</div>
