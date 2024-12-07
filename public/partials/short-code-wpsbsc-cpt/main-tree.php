@@ -26,7 +26,7 @@
 			
 
 		</div>
-
+		<div>x</div>
 		<div class="nav-buttons">
 							
 			<div class="forward">Volver</div>
