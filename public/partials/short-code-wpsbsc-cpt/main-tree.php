@@ -12,7 +12,7 @@
 		
 	<div class="left-container">
 
-		<div class="main-title"><?= $main_title ?></div>
+		<div class="main-title"><?= $main_title ?> x</div>
 		<div class="swiper">
 			<!-- Additional required wrapper -->
 			<div class="swiper-wrapper">
@@ -35,7 +35,7 @@
 			
 		</div>
 	</div>
-	
+
 	<div class="right-container">
 		<div class="header">
 			<div class="title-1">TU SELECCIÓN</div>
