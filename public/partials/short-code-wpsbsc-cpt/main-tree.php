@@ -4,6 +4,8 @@
 	$main_title = 'TUS CRISTALES'; //$args['main_title'];;
 	$steps = $args['steps'];
 	$product_img_url = wp_get_attachment_image_url( $product->get_image_id(), 'full' );
+
+	write_log( 'Valor de $main_title: ' . $main_title );
 ?>
 
 <div class="cristal-selection main-container">

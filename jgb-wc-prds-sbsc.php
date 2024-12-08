@@ -79,4 +79,25 @@ function run_jgb_wc_prds_sbsc() {
 	$plugin->run();
 
 }
+
+if (!function_exists('write_log')) {    
+    /**
+     * Enviar mensajes al log de WordPress
+     *
+     * @param string $message Mensaje que deseas registrar.
+     * @param string $context Contexto opcional del log (por ejemplo, un identificador).
+     */
+    function write_log($message, $context = 'custom-log') {
+        if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+            if (is_array($message) || is_object($message)) {
+                $message = print_r($message, true); // Convierte arrays y objetos a cadena
+            }
+
+            $formatted_message = sprintf("[%s] %s: %s\n", date("Y-m-d H:i:s"), strtoupper($context), $message);
+
+            error_log($formatted_message, 3, WP_CONTENT_DIR . '/debug.log');
+        }
+    }
+}
+
 run_jgb_wc_prds_sbsc();
