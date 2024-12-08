@@ -221,7 +221,8 @@ function get_fields_to_render( parentFVPath ){
 		const currentFieldOption = {
 			id: record['id'],
 			slug: record['selectable_value_slug'],
-			label: record['selectable_value_label']
+			label: record['selectable_value_label'],
+			arvl: JSON.parse( record['arvl'] )
 		};
 
 		for( i=0; i<r.length; i++ ){

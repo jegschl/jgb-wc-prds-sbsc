@@ -165,7 +165,8 @@ class SBSCDefPTShortCode{
                     'id'    => $raw_opt['id'],
                     'label' => $raw_opt['selectable_value_label'],
                     'slug'  => $raw_opt['selectable_value_slug'],
-                    'value' => $raw_opt['selectable_value_slug']
+                    'value' => $raw_opt['selectable_value_slug'],
+                    'arvl'  => json_decode( $raw_opt['arvl'], true )
                 ];
             }
             
