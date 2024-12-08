@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://x.com
- * @since             1.0.9
+ * @since             1.0.0
  * @package           Jgb_Wc_Prds_Sbsc
  *
  * @wordpress-plugin
  * Plugin Name:       JGB WC Products Step by Step Configurator
  * Plugin URI:        https://x.com
  * Description:       Set a step by step parameters configurator for WC products in the frontend.
- * Version:           1.0.0
+ * Version:           1.0.9
  * Author:            Jorge Garrido
  * Author URI:        https://x.com/
  * License:           GPL-2.0+
