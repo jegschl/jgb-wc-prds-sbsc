@@ -9,7 +9,7 @@
  * that starts the plugin.
  *
  * @link              https://x.com
- * @since             1.0.0
+ * @since             1.0.9
  * @package           Jgb_Wc_Prds_Sbsc
  *
  * @wordpress-plugin
