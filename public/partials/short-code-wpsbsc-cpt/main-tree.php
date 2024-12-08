@@ -5,7 +5,7 @@
 	$steps = $args['steps'];
 	$product_img_url = wp_get_attachment_image_url( $product->get_image_id(), 'full' );
 
-	write_log( 'Valor de $main_title: ' . $main_title );
+	//write_log( 'Valor de $main_title: ' . $main_title );
 ?>
 
 <div class="cristal-selection main-container">
@@ -14,7 +14,7 @@
 		
 	<div class="left-container">
 
-		<div class="main-title"><?= $main_title ?> x</div>
+		<div class="main-title"><?= $main_title ?></div>
 		<div class="swiper">
 			<!-- Additional required wrapper -->
 			<div class="swiper-wrapper">
