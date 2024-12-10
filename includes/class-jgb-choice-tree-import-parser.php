@@ -1166,20 +1166,22 @@ class JGBWPSChoiceTreeImportParser{
                     $tbl .= "data";
                     $dt = [
                         'type'  => $itm['data_type'],
-                        'value' => $itm['value']
+                        'value' => $itm['value'],
+                        'post_id' => $this->postId
                     ];
-                    $qwc = "value = '{$itm['value']}'";
+                    $qwc = "post_id = {$this->postId} AND value = '{$itm['value']}'";
                     break;
 
                 case 'FIELD':
                     $tbl .= "field";
                     $dt = [
                         'type'  => $itm['field_type'],
-                        'options' => $this->process_additional_selection_options( $itm )
+                        'options' => $this->process_additional_selection_options( $itm ),
+                        'post_id' => $this->postId
                     ];
                     $jsnToStr = str_replace( ':', ': ', $dt['options'] );
                     $jsnToStr = str_replace( ',', ', ', $jsnToStr );
-                    $qwc = "options = CAST('{$dt['options']}' AS JSON)";
+                    $qwc = "post_id = {$this->postId} AND options = CAST('{$dt['options']}' AS JSON)";
                     break;
 
             }
