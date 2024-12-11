@@ -214,6 +214,8 @@ function get_fields_to_render( parentFVPath ){
 
 	dtChoicesAvailables(q).each(function(record){
 
+		let cp,cpid;
+
 		const fieldSlug = getFieldSlugById( record['field_id'] );
 		
 		let fieldOptionsUpdated = false;
@@ -222,7 +224,8 @@ function get_fields_to_render( parentFVPath ){
 			id: record['id'],
 			slug: record['selectable_value_slug'],
 			label: record['selectable_value_label'],
-			arvl: JSON.parse( record['arvl'] )
+			arvl: JSON.parse( record['arvl'] ),
+			optionItems: []
 		};
 
 		for( i=0; i<r.length; i++ ){
@@ -230,6 +233,26 @@ function get_fields_to_render( parentFVPath ){
 			if( r[i]['slug'] == fieldSlug ){
 
 				r[i]['priorityInStep'] = parseInt( dtFields({id:record['field_id']}).first()['priority_in_step'] );
+
+				/* Recuperando datos de la opción actual */
+				if( ( parentFVPath !== undefined )
+					&& ( parentFVPath !== null )
+					&& ( parentFVPath !== '' ) 
+				){
+					let optFVPath = parentFVPath;
+					optFVPath += ',';
+					optFVPath += record['field_id'] + '=' + record['id'];
+					[cp,cpid] = loadCUrrentOptionData( optFVPath );
+
+					if( 
+						( cp !== undefined ) 
+						&& ( cp !== null ) 
+						&& ( Array.isArray(cp) )
+						&& ( cp.length > 0 )
+					){
+						currentFieldOption.optionItems = cp;
+					}
+				}
 
 				r[i]['options'].push( currentFieldOption );
 
@@ -858,7 +881,7 @@ function getFieldFromVCSItem( VCSItem ){
 	return null;
 }
 
-function loadCUrrentOptionData(){
+function loadCUrrentOptionData( parentFVPath = '' ){
 
 	let i = 0;
 	let j = 0;
@@ -868,7 +891,11 @@ function loadCUrrentOptionData(){
 	let itemsData = [];
 	let curItem = {};
 
-	vlsIdsCmbnsStr = currentParentFVPath();
+	if( parentFVPath=='' ){
+		vlsIdsCmbnsStr = currentParentFVPath();
+	} else {
+		vlsIdsCmbnsStr = parentFVPath;
+	}
 
 	if( vlsIdsCmbnsStr.split(",").length == 1 ){
 		optionsData = [];
