@@ -202,24 +202,37 @@ function get_fields_to_render_type_vcsItem_field_subType_additional_selection( p
 }
 
 function get_fields_to_render( parentFVPath ){
-	let q;
+	let q; // Variable para la query.
 
-	let r = [];
+	let r = []; // Array que se devolverá al finalizar la función.
 
-	let fieldsToRender = [];
+	let fieldsToRender = []; // Listado de campos detectados.
 
-	let i = 0;
+	let i = 0; // Contador de iteraciones.
 
+	// La query se construye para filtrar todos las posibles selecciones disponibles
+	// para el parentFVPath actual.
 	q = {parents_fv_path:parentFVPath.toString()};
 
+	// Se itera en cada Selección disponible del parentFVPath actual.
 	dtChoicesAvailables(q).each(function(record){
 
+		// Variables para almacenar las optionItems de cada opción y 
+		// el segundo elemento en la destructuración del valor
+		// devuelto por loadCUrrentOptionData.
 		let cp,cpid;
 
+		// Se obtiene el slug del campo al que pertenece la selección disponible actual
+		// ya que se está iterando en cada una de las selecciones disponibles del 
+		// parentFVPath actual.
 		const fieldSlug = getFieldSlugById( record['field_id'] );
 		
-		let fieldOptionsUpdated = false;
+		// Bandera para indicar si se actualizó la opción de un campo (que aún no determinamos
+		// con certeza cuál es el fín práctico de este flag).
+		let fieldOptionsUpdated = false; //////////////////////////
 
+		// Estructura que se usa para almacenar cada una de las opciones de un campo en cada
+		// iteración.
 		const currentFieldOption = {
 			id: record['id'],
 			slug: record['selectable_value_slug'],
@@ -228,31 +241,31 @@ function get_fields_to_render( parentFVPath ){
 			optionItems: []
 		};
 
+		/* Recuperando datos de la opción actual */
+		if( ( parentFVPath !== undefined )
+			&& ( parentFVPath !== null )
+			&& ( parentFVPath !== '' ) 
+		){
+			let optFVPath = parentFVPath;
+			optFVPath += ',';
+			optFVPath += record['field_id'] + '=' + record['id'];
+			[cp,cpid] = loadCUrrentOptionData( optFVPath );
+
+			if( 
+				( cp !== undefined ) 
+				&& ( cp !== null ) 
+				&& ( Array.isArray(cp) )
+				&& ( cp.length > 0 )
+			){
+				currentFieldOption.optionItems = cp;
+			}
+		}
+
 		for( i=0; i<r.length; i++ ){
 
 			if( r[i]['slug'] == fieldSlug ){
 
 				r[i]['priorityInStep'] = parseInt( dtFields({id:record['field_id']}).first()['priority_in_step'] );
-
-				/* Recuperando datos de la opción actual */
-				if( ( parentFVPath !== undefined )
-					&& ( parentFVPath !== null )
-					&& ( parentFVPath !== '' ) 
-				){
-					let optFVPath = parentFVPath;
-					optFVPath += ',';
-					optFVPath += record['field_id'] + '=' + record['id'];
-					[cp,cpid] = loadCUrrentOptionData( optFVPath );
-
-					if( 
-						( cp !== undefined ) 
-						&& ( cp !== null ) 
-						&& ( Array.isArray(cp) )
-						&& ( cp.length > 0 )
-					){
-						currentFieldOption.optionItems = cp;
-					}
-				}
 
 				r[i]['options'].push( currentFieldOption );
 
