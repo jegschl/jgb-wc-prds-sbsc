@@ -45,7 +45,15 @@
 			<div class="SKU"><?= $args['sku'] ?></div>
 		</div>
 		<div class="photo-container">
-			<img src="<?= $product_img_url ?>"  class="spf">
+			<?php if( $product_img_url !== false ): ?>
+				
+				<img src="<?= $product_img_url ?>"  class="spf">
+
+			<?php else: ?>
+			
+				<p class="no-img-text">Imagen no disponible</p>
+			
+			<?php endif; ?>
 		</div>
 		<div class="primary-product-details">
 			<div class="title-1">ARMAZÓN</div>
