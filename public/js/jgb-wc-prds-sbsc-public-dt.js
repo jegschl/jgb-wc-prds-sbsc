@@ -810,6 +810,7 @@ function setFeatureValue( fieldId, fieldSlug, valueSlug, valueLabel, valueRegId,
 
 		if( ( ( selectedFeatures[i].fieldType == 'field' )
 		      || (selectedFeatures[i].fieldType == 'field:additional-select')
+			  || (selectedFeatures[i].fieldType == 'field:data')
 		    )
 		    && ( selectedFeatures[i].stepOnStore > swiper.activeIndex )  ){
 			selectedFeatures[i].value 		= null;
