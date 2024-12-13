@@ -226,7 +226,14 @@ class SBSCDefinitionPostType{
                     ] );
                    
                     foreach( $product_categories as $category ){
-                        $selected = in_array( $category->term_id, $opts['product-categories'] ) ? 'selected' : '';
+                        if( is_array( $opts['product-categories'] ) ){
+                            $selected = in_array( $category->term_id, $opts['product-categories'] ) ? 'selected' : '';
+                        }
+
+                        if( is_string( $opts['product-categories'] ) || is_int( $opts['product-categories'] ) ){
+                            $selected = $opts['product-categories'] == $category->term_id ? 'selected' : '';
+                        }
+
                         echo '<option value="' . $category->term_id . '" '.$selected.'>' . $category->name . '</option>';
                     }
                 ?>
