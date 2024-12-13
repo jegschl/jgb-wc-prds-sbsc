@@ -40,6 +40,11 @@ const eventParamsPrepareFieldOptionHtmlTemplate = {
 };
 const jwpsbscPrepareFieldOptionHtmlTemplate = new CustomEvent('jwpsbscPrepareFieldOptionHtmlTemplate', {detail: eventParamsPrepareFieldOptionHtmlTemplate});
 
+const eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = {
+	'fields': [],
+	'combinationString': ''
+}
+const jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = new CustomEvent('jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep', {detail: eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep});
 
 TAFFY.extend('max', function (column) {
 
@@ -155,10 +160,6 @@ function get_fields_to_render_type_vcsItem_field_subType_additional_selection( p
 
 	let r = [];
 
-	let fieldsItemsTypeAddSlctn = [];
-
-	let itemsToRender = [];
-
 	let j,i = 0;
 
 	dtChoicesCombinations(q).each(function(recordChCmb){
@@ -197,6 +198,11 @@ function get_fields_to_render_type_vcsItem_field_subType_additional_selection( p
 
 	});
 
+	eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep.fields = r;
+	eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep.combinationString = parentFVPath;
+	document.dispatchEvent( jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep )
+	
+	r = eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep.fields;
 	return r;
 
 }
