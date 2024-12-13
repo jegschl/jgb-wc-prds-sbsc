@@ -94,6 +94,12 @@ function getUrlParameter(sParam) {
 
             
 		} );
+
+        $('#woocommerce-categories #product-categories').select2({
+            placeholder: "Seleccionar categorías", // Texto por defecto
+            allowClear: true,                   // Permite limpiar la selección
+            width: '400px'                    // Ajusta el ancho automáticamente
+        });
         
     });
 

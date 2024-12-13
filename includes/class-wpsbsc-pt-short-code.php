@@ -31,16 +31,50 @@ class SBSCDefPTShortCode{
     }
 
     private function is_product_in_category_or_child($product_id, $category_id) {
-        // Obtener las categorías hijas
-        $child_categories = get_term_children($category_id, 'product_cat');
-        $categories_to_check = array_merge([$category_id], $child_categories);
-    
-        // Verificar si el producto está en alguna de estas categorías
-        $has_term = has_term($categories_to_check, 'product_cat', $product_id);
-        return $has_term;
+        
+        if( is_array($category_id) ){
+            foreach( $category_id as $cat_id ){
+                if( $this->is_product_in_category_or_child( $product_id, $cat_id ) ){
+                    return true;
+                }
+            }
+        } else {
+            $category_id = intval($category_id);
+
+            // Obtener las categorías hijas
+            $child_categories = get_term_children($category_id, 'product_cat');
+            $categories_to_check = array_merge([$category_id], $child_categories);
+        
+            // Verificar si el producto está en alguna de estas categorías
+            $has_term = has_term($categories_to_check, 'product_cat', $product_id);
+            return $has_term;
+        }
+
+        return false;
+        
     }
 
     public function render_button_crystal_selection() {
+        
+        global $post;
+
+        $product = wc_get_product( $post->ID );
+
+        $wpsbsc_posts = SBSCDefinitionPostType::get_all_post_meta_from_cpt();
+        $wpsbsc_posts_on_product_allowed = false;
+        foreach( $wpsbsc_posts as $wpsbsc_id => $wpsbsc_post ){
+            
+            $opts = unserialize( $wpsbsc_post['meta'][ JGB_WPSBSC_CPT_MKNM_OPTIONS ][0]);
+            
+            if( $this->is_product_in_category_or_child( $product->get_id(), $opts['product-categories'] ) ){
+                $wpsbsc_posts_on_product_allowed = true;
+                break;
+            }
+        }
+
+        if( !$wpsbsc_posts_on_product_allowed ){
+            return;
+        }
         
         ?>
         <div class="button-select-crystals">

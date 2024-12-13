@@ -56,7 +56,14 @@ class SBSCDefinitionPostType{
                 'main_content_json' => $this->main_content_json
             ];
 
-            
+            // Registrar y encolar el JS de Select2
+            wp_enqueue_script(
+                'jgb-select2-js',
+                'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js',
+                ['jquery'], // Select2 depende de jQuery
+                '4.0.13',
+                true // Cargar en el footer
+            );
 
             /* $sbn   = "jsoneditor.min";
             $sid   = $sbn . "-js";
@@ -66,6 +73,7 @@ class SBSCDefinitionPostType{
             $sftk  = filemtime($spath);
 
             wp_enqueue_script( $sid, $surl, array('jquery'), $sftk, true ); */
+
 
 
             $sbn   = "jgb-mem-sheet-mtx";
@@ -96,7 +104,7 @@ class SBSCDefinitionPostType{
             $sftk  = filemtime($spath);
 
             //wp_enqueue_script( $sid, $surl, array('jquery','jsoneditor.min-js','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
-            wp_enqueue_script( $sid, $surl, array('jquery','jgb-mem-sheet-mtx-js','jquery.blockUI-js'), $sftk, true );
+            wp_enqueue_script( $sid, $surl, array('jquery','jgb-mem-sheet-mtx-js','jquery.blockUI-js','jgb-select2-js'), $sftk, true );
 
 
             wp_localize_script( $sid, 'JGB_WPSBSC_CPT_DEF_DATA', $dt );
@@ -110,6 +118,14 @@ class SBSCDefinitionPostType{
         if (($hook == 'post-new.php' || $hook == 'post.php') && $post_type == JGB_WPSBSC_CPT_NM_SBSC_DEFINITION) {
             
             $plg_dir = str_replace( "/includes", "", plugin_dir_url( __FILE__ ) );
+
+            // Registrar y encolar el CSS de Select2
+            wp_enqueue_style(
+                'jgb-select2-css',
+                'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css',
+                [],
+                '4.0.13'
+            );
 
             $sbn   = "jsoneditor.min";
             $sid   = $sbn . "-css";
@@ -202,15 +218,15 @@ class SBSCDefinitionPostType{
         </div>
         
         <div id="woocommerce-categories">
-            <select id="product-categories" name="product-category">
-                <option value="0" <?= $nocat ?>>Seleccionar categoría</option>
+            <select id="product-categories" name="product-category[]" multiple="multiple">
+                <!-- <option value="0" <?= $nocat ?>>Seleccionar categoría</option> -->
                 <?php
                     $product_categories = get_terms( 'product_cat', [
                         'hide_empty' => true
                     ] );
                    
                     foreach( $product_categories as $category ){
-                        $selected = $opts['product-categories'] == $category->term_id ? 'selected' : '';
+                        $selected = in_array( $category->term_id, $opts['product-categories'] ) ? 'selected' : '';
                         echo '<option value="' . $category->term_id . '" '.$selected.'>' . $category->name . '</option>';
                     }
                 ?>
