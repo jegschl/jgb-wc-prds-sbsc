@@ -446,7 +446,7 @@ class SBSCDefPTShortCode{
 
             $script_array_info['popupMakerId'] = $this->popup_maker_id;
 
-            
+            $script_array_info['globalPercentDiscount'] = apply_filters('JGB/WPSBSC/global_percent_discount', 0 );
             
             $jsid = 'taffy-min';
             $jsfn = $jsid . '.js';

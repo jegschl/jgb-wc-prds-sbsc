@@ -635,10 +635,13 @@ function desplegarPrice( ru66 = false){
 		const sfcSlctr = ".main-container .price-container";
 		
 		let price = null;
+		let sellPrice = null;
+		let percentDiscount = null;
 		let intf = null;
 		let cp;
 		let priceItem;
 		let adicionalRangoSobre66;
+		let htmlPrice = '';
 		
 		[cp,i] = loadCUrrentOptionData();
 
@@ -661,10 +664,23 @@ function desplegarPrice( ru66 = false){
 
 		if( price != null ){
 			intf = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' });
-			$(sfcSlctr).text( intf.format(price) );
-			$(cartFormSltr + ' input[name="precio"]').val( price );
+			percentDiscount = parseFloat( JGB_WPSBSC_DATA['globalPercentDiscount'] );
+			
+			if( percentDiscount > 0 ){
+				sellPrice = parseInt( price ) - ( parseInt( price ) * percentDiscount / 100 );
+				htmlPrice = '<span class="without-discount-price">' + intf.format(price) + '</span> ';
+			} else {
+				sellPrice = price;
+			}
+			htmlPrice += '<span class="with-discount-price">' + intf.format(sellPrice) + '</span>';
+			if( percentDiscount > 0 ){
+				htmlPrice += ' <span class="percent-discount">-' + percentDiscount + '%</span>';
+			}
+			$(sfcSlctr).html( htmlPrice );
+			$(cartFormSltr + ' input[name="percentDiscount"]').val( percentDiscount );
+			$(cartFormSltr + ' input[name="precio"]').val( sellPrice );
 		} else {
-			$(sfcSlctr).text('');
+			$(sfcSlctr).html('');
 		}
 
 	})( jQuery );
