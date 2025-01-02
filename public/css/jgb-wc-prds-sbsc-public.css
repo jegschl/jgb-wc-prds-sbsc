@@ -280,3 +280,25 @@
     background: #ff0202;
     color: #fff;
 }
+
+.right-container .price-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.right-container .without-discount-price{
+    color: gray;
+    text-decoration-line: line-through;
+    text-decoration-style: solid;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.right-container .percent-discount{
+    background-color: yellow;
+    padding: 3px 5px;
+    font-size: 9px;
+    border-radius: 5px;
+    margin-left: 5px;
+}
