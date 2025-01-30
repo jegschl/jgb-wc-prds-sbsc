@@ -223,7 +223,7 @@ class Jgb_Wc_Prds_Sbsc {
 
 		$this->loader->add_filter( 'woocommerce_product_data_tabs', $plugin_admin, 'product_tabs' );
 		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'wc_prds_sbsc_tab' );
-
+		//$this->loader->add_filter( 'manage_edit-shop_order_columns', $plugin_admin, 'wc_add_item_order_thumbnail_column_header' );
 		$this->loader->add_action( 'init', $this->CPT_WcProdSbsc_register, 'register' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_scripts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $this->CPT_WcProdSbsc_register, 'enqueue_admin_styles' );
