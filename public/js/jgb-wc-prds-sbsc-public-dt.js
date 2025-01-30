@@ -1114,7 +1114,7 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 			const priceField = {
 				'field': 'precio',
 				'label': 'Precio cristales',
-				'valueLabel': $('.cristal-selection.main-container .price-container').text(),
+				'valueLabel': $('.cristal-selection.main-container .price-container .with-discount-price').text(),
 				'value': null,
 			};
 			priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
