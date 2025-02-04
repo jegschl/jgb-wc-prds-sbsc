@@ -1093,19 +1093,7 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 
 		document.addEventListener('jwpsbscAfterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
 
-		document.addEventListener('jwpsbscAfterRenderStep', function(){
-			$('.step .help-link').each((i,e)=>{
-				$(e).off('click');
-				$(e).click((evnt)=>{
-					const hbDataIdToShow = $(evnt.target).data('show-hb-id');
-					const hbets = $('.help-box[data-hb-id="' + hbDataIdToShow + '"]');
-					if( $(hbets).hasClass('hidden') ){
-						$(hbets).removeClass('hidden');
-					}
-				})
-			});
-
-		} );
+		
 
 		document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeField );
 
