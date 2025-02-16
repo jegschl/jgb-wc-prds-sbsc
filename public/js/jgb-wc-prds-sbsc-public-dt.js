@@ -318,7 +318,9 @@ function selectedFeaturesIsSeted( fieldData ){
 				break;
 		}
 
-		if( selectedFeatures[i].fieldId == fid ){
+		if( selectedFeatures[i].fieldId == fid
+			&& selectedFeatures[i].fieldType == fieldData.type
+		 ){
 			if(  ( selectedFeatures[i].value != null ) 
 				 && ( selectedFeatures[i].valueRegId != null )
 				 && ( selectedFeatures[i].valueLabel != null ) 
