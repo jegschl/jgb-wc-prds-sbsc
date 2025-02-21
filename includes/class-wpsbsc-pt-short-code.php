@@ -349,6 +349,20 @@ class SBSCDefPTShortCode{
         return apply_filters('JGB/WPSBSC/step_wraper_begin_tpl', ob_get_clean());   
     }
 
+    public function get_last_step_wraper_begin_tpl(){
+        ob_start();
+        ?>
+        <div class="swiper-slide">
+
+            <div class="step step-last">
+
+                <div class="title">Has finalizado la selección</div>
+                
+                    <div class="content"> 
+        <?php
+        return apply_filters('JGB/WPSBSC/last_step_wraper_begin_tpl', ob_get_clean());   
+    }
+
     public function get_step_wraper_end_tpl(){
         ob_start();
         ?>
@@ -362,6 +376,47 @@ class SBSCDefPTShortCode{
         <?php
         return apply_filters('JGB/WPSBSC/step_wraper_end_tpl', ob_get_clean());
 
+    }
+
+    public function get_last_step_wraper_end_tpl(){
+        ob_start();
+        ?>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <?php
+        return apply_filters('JGB/WPSBSC/last_step_wraper_end_tpl', ob_get_clean());
+
+    }
+
+    public function get_last_step_content_tpl(){
+        $atcrimg = apply_filters('JGB/WPSBSC/add_to_cart_ready_image_url', 'https://via.placeholder.com/150');
+        ob_start();
+        ?>
+        <div class="content">
+            <div class="content-inner">
+                <div class="content-inner-title">
+                    Ya no hay más pasos!!
+                </div>
+                <div class="content-inner-description">
+                    Ya puedes hacer tu pedido!
+                </div>
+                <div class="content-inner-atc-wrapp">
+                    <div class="content-inner-image">
+                        <img src="<?= $atcrimg ?>" alt="ya-puedes-agregar-al-carrito">
+                    </div>
+                    <div class="content-inner-button">
+                        <div class="add-crystal-to-cart">Agregar al carrito</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        return apply_filters('JGB/WPSBSC/last_step_content_tpl', ob_get_clean());
     }
 
     public function get_step_titles( $post_id ){
@@ -443,6 +498,10 @@ class SBSCDefPTShortCode{
             $script_array_info['endStepWraperTpl'] = $this->get_step_wraper_end_tpl();
 
             $script_array_info['stepTitles'] = $this->get_step_titles( $atts['id'] );
+
+            $script_array_info['beginLastStepWraperTpl'] =  $this->get_last_step_wraper_begin_tpl();
+            $script_array_info['contentLastStepTpl'] = $this->get_last_step_content_tpl();
+            $script_array_info['endLastStepWraperTpl'] = $this->get_last_step_wraper_end_tpl();
 
             $script_array_info['popupMakerId'] = $this->popup_maker_id;
 

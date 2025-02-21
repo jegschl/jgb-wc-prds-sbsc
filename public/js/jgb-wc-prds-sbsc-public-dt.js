@@ -4,6 +4,7 @@ let selectedFeatures = [];
 let optionsData = [];
 let maxStepIndex;
 let dtFields, dtChoicesAvailables, dtChoicesCombinations, dtVcsItems, dtItemsData, dtItemsField;
+let vrwlIsLastStep = false;
 
 const speed = 500;
 const preAdditionalFieldsStepIndex = 2;
@@ -532,6 +533,8 @@ function renderStep(){
 
 	if( fieldsToRender.length > 0 ){
 
+		vrwlIsLastStep = false;
+
 		incrmtr = ( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ) ? 1 : 2;
 
 		let step = swiper.activeIndex + incrmtr;
@@ -543,6 +546,21 @@ function renderStep(){
 		//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento jwpsbscAfterRenderStep.
 		document.dispatchEvent( jwpsbscAfterRenderStep );
 
+	} else {
+		//se renderiza la el último step.
+
+		vrwlIsLastStep = true;
+
+		incrmtr = ( ( parentFVPath == undefined ) || ( parentFVPath == '' ) ) ? 1 : 2;
+
+		let step = swiper.activeIndex + incrmtr;
+
+		templatesToRender = renderLastStep( step );
+
+		swiper.appendSlide( templatesToRender.join("\n") );
+
+		//Se ejecuta setEventHandlersForAvailablesValuesChoicesSelectors() con el evento jwpsbscAfterRenderStep.
+		document.dispatchEvent( jwpsbscAfterRenderStep );
 	}
 
 }
@@ -563,6 +581,25 @@ function renderNextStep(){
 
 	renderStep();
 
+}
+
+function renderLastStep( step ){
+
+	let templatesToRender = [];	
+
+	let ts = JGB_WPSBSC_DATA['beginLastStepWraperTpl'].replace("{{step_index}}",step.toString());
+
+	ts = ts.replace("{{title}}", JGB_WPSBSC_DATA['stepTitles'][(step-1).toString()] );
+
+	templatesToRender.push( ts );
+
+	ts = JGB_WPSBSC_DATA[ 'contentLastStepTpl' ];
+	
+	templatesToRender.push( ts );
+		
+	templatesToRender.push( JGB_WPSBSC_DATA['endLastStepWraperTpl'] );
+
+	return templatesToRender;
 }
 
 function removeSlidesFrom( index ){
