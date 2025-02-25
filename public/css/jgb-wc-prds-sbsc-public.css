@@ -302,3 +302,43 @@
     border-radius: 5px;
     margin-left: 5px;
 }
+
+.left-container .step.step-last .content-inner-atc-wrapp,
+.left-container .step.step-last .content-inner-description,
+.left-container .step.step-last .content-inner-title {
+    padding: 16px 30px;
+}
+
+.left-container .step.step-last .content-inner-title {
+    
+    text-transform: uppercase;
+}
+
+.left-container .step.step-last .content-inner-description{
+    font-size: medium;
+    font-style: normal;
+    font-weight: 500;
+    margin-bottom: .5rem;
+}
+
+
+
+.content-inner-button > .add-crystal-to-cart {
+    background-color: blue;
+    /*! width: 200px; */
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-weight: 400;
+  }
+  
+
+.content-inner-button {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+.content-inner-image {
+    text-align: center;
+  }
+  

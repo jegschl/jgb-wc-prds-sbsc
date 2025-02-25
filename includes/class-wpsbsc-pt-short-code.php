@@ -394,7 +394,9 @@ class SBSCDefPTShortCode{
     }
 
     public function get_last_step_content_tpl(){
-        $atcrimg = apply_filters('JGB/WPSBSC/add_to_cart_ready_image_url', 'https://via.placeholder.com/150');
+        
+        $atcrimg =  \Jgb_Wc_Prds_Sbsc::get_plugin_url() . 'public/imgs/cf-atc-dark-02.png';
+        $atcrimg = apply_filters('JGB/WPSBSC/add_to_cart_ready_image_url', $atcrimg);
         ob_start();
         ?>
         <div class="content">

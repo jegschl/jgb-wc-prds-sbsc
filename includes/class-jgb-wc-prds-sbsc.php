@@ -308,4 +308,10 @@ class Jgb_Wc_Prds_Sbsc {
 		return WP_PLUGIN_DIR . '/' . Jgb_Wc_Prds_Sbsc::$static_plugin_name;
 	}
 
+	public static function get_plugin_url() {
+		$rpu = plugin_dir_url( __FILE__ );
+		$rpu = str_replace( 'includes/', '', $rpu );
+		return $rpu;
+	}
+
 }
