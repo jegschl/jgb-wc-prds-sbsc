@@ -72,7 +72,7 @@
 		</div>
 
 		<div class="nav-buttons">
-			<div class="add-crystal-to-cart">Comprar</div>
+			<div class="add-crystal-to-cart hidden">Agregar al carrito</div>
 		</div>
 	</div>
 </div>

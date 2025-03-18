@@ -827,6 +827,7 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 	})( jQuery );
 }
 
+
 function getFieldSlugById( id ){
 	const s = dtFields({id:id.toString() }).first().slug;
 	return s;
@@ -1029,8 +1030,35 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 	return [null, null];
 }
 
+
+
 (function( $ ) {
 	'use strict';
+
+	function checkLastStepForsetEventHandlersOnLastStep(){
+		const permanentATCButtonSlctr = '.right-container .add-crystal-to-cart';
+		if( vrwlIsLastStep ){
+			$('.add-crystal-to-cart').click((evnt)=>{
+				
+				evnt.preventDefault();
+				
+				addToCartHandler();
+				
+			});
+
+			
+			
+			if( $(permanentATCButtonSlctr).hasClass('hidden') ){
+				$(permanentATCButtonSlctr).removeClass('hidden');
+			}
+
+		} else {
+			$('.add-crystal-to-cart').off('click');
+			if( !$(permanentATCButtonSlctr).hasClass('hidden') ){
+				$(permanentATCButtonSlctr).addClass('hidden');
+			}
+		}
+	}
 
 	function setEventHandlersForSelectedFeaturesRadios(){
 		let i;
@@ -1063,6 +1091,22 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 
 			
 		}
+	}
+
+	function addToCartHandler(){
+		const priceField = {
+			'field': 'precio',
+			'label': 'Precio cristales',
+			'valueLabel': $('.cristal-selection.main-container .price-container .with-discount-price').text(),
+			'value': null,
+		};
+		priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
+		const productData = [ ...selectedFeatures, {...priceField} ];
+		
+		let jwpsProdData = JSON.stringify( productData );
+		jwpsProdData = btoa(encodeURIComponent( jwpsProdData ));
+		$('form.cart input[name="jwps-prod-data"]').val( jwpsProdData );
+		$('form.cart button.single_add_to_cart_button.button.alt').trigger('click');
 	}
 
 	$(document).on( 'pumBeforeOpen', ppuMkrSlctr, function(evnt){
@@ -1132,26 +1176,10 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 
 		document.addEventListener('jwpsbscAfterRenderStep', setEventHandlersForAvailablesValuesChoicesSelectors );
 
-		
+		document.addEventListener('jwpsbscAfterRenderStep', checkLastStepForsetEventHandlersOnLastStep );
 
 		document.addEventListener('jwpsbscSetFeatureValue', setFeatureValueForFieldTypeField );
 
-		$('.add-crystal-to-cart').click((evnt)=>{
-			evnt.preventDefault();
-			const priceField = {
-				'field': 'precio',
-				'label': 'Precio cristales',
-				'valueLabel': $('.cristal-selection.main-container .price-container .with-discount-price').text(),
-				'value': null,
-			};
-			priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
-			const productData = [ ...selectedFeatures, {...priceField} ];
-			
-			let jwpsProdData = JSON.stringify( productData );
-			jwpsProdData = btoa(encodeURIComponent( jwpsProdData ));
-			$('form.cart input[name="jwps-prod-data"]').val( jwpsProdData );
-			$('form.cart button.single_add_to_cart_button.button.alt').trigger('click');
-		});
 	});
 
 })( jQuery );
