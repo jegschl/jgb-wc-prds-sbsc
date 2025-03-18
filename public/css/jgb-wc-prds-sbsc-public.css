@@ -160,6 +160,7 @@
 .left-container .nav-buttons .next:hover,.left-container .nav-buttons .forward:hover,.nav-buttons .add-crystal-to-cart:hover{
     color: white;
     background-color: #ff3535;
+    cursor: pointer;
 }
 
 .step .option-aditional-imgs{
@@ -279,6 +280,7 @@
 .single-product .bwp-single-info .button-select-crystals button:hover {
     background: #ff0202;
     color: #fff;
+    cursor: pointer;
 }
 
 .right-container .price-container{
@@ -323,15 +325,24 @@
 
 
 
-.content-inner-button > .add-crystal-to-cart {
+.step-last .content-inner-button > .add-crystal-to-cart {
     background-color: blue;
     /*! width: 200px; */
     display: inline-block;
     padding: 10px 15px;
     border-radius: 25px;
     font-weight: 400;
-  }
-  
+}
+ 
+.step-last .content-inner-button > .add-crystal-to-cart:hover {
+    background-color: red;
+    /*! width: 200px; */
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-weight: 400;
+    cursor: pointer;
+}
 
 .content-inner-button {
     text-align: center;
