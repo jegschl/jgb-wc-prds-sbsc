@@ -1070,28 +1070,13 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 					$(cartFormSltr + ' ' + selectedFeatures[i].vlSltr).val( selectedFeatures[i].value );
 					desplegarSFs();
 					desplegarPrice();
-					checkAdditionalFields();
+					
 				});
 			}
 		}
 	
 	}
 
-	
-
-	function checkAdditionalFields(){
-		const actStep = swiper.activeIndex;
-		if( actStep == preAdditionalFieldsStepIndex ){
-
-			/* add new step panel si no existe previamente */
-
-			/* generar nuevo placeholder wrapper */
-
-			/* renderizar nuevos campos adicionales */
-
-			
-		}
-	}
 
 	function addToCartHandler(){
 		const wdp = $('.cristal-selection.main-container .price-container .with-discount-price')[0];
