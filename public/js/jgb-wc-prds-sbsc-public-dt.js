@@ -1094,10 +1094,12 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 	}
 
 	function addToCartHandler(){
+		const wdp = $('.cristal-selection.main-container .price-container .with-discount-price')[0];
+		const valueLabel = $(wdp).text();
 		const priceField = {
 			'field': 'precio',
 			'label': 'Precio cristales',
-			'valueLabel': $('.cristal-selection.main-container .price-container .with-discount-price').text(),
+			'valueLabel': valueLabel,
 			'value': null,
 		};
 		priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
