@@ -105,9 +105,13 @@ class ProductFieldsManager{
             && is_array( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'] )
             && ( count( $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'] ) > 0 )
         ){
-            $jwpdcc = [];
+            
             $this->items_data_keys = $values[ JGB_WPSBSC_PROD_DATA_CONFIG_CID ]['items_data_keys'];
+
         }
+
+        $jwpdcc = [];
+        
         foreach( $this->items_data_keys as $pf ){
             if(
                    isset( $values[ $pf ] )
