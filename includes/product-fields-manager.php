@@ -142,7 +142,6 @@ class ProductFieldsManager{
             if( isset( $cart_item['precio'] ) ){
                 $prod_price = $cart_item['data']->get_price();
                 $cart_item['data']->set_price( $prod_price + $cart_item[ 'precio' ]['value'] );
-                return;
             }
             
         }
