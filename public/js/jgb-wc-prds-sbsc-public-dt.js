@@ -48,6 +48,7 @@ const eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = {
 const jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = new CustomEvent('jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep', {detail: eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep});
 
 const eventParamsBeforeDeploySFs = {
+	fatherFieldEl: null,
 	currentOptions: null
 };
 const jwpsbscBeforeDeploySFs = new CustomEvent('jwpsbscBeforeDeploySFs', {detail: eventParamsBeforeDeploySFs});
@@ -627,7 +628,7 @@ function desplegarSFs(){
 		const sfcSlctr = ".selected-features-container";
 		let html = '<table><tbody>';
 
-		eventParamsBeforeDeploySFs.detail.currentOptions = selectedFeatures;		
+		eventParamsBeforeDeploySFs.currentOptions = selectedFeatures;		
 		document.dispatchEvent(jwpsbscBeforeDeploySFs);
 
 		$(selectedFeatures).each(function(i,e){
@@ -704,12 +705,12 @@ function desplegarPrice(){
 			if( priceItem != null ){
 				price = priceItem['data'];
 				
-				eventParamsAfterGetPriceItemData.detail.currentOptions = cp;
-				eventParamsAfterGetPriceItemData.detail.priceItem = priceItem;
+				eventParamsAfterGetPriceItemData.currentOptions = cp;
+				eventParamsAfterGetPriceItemData.priceItem = priceItem;
 				document.dispatchEvent(jwpsbscAfterGetPriceItemData);
 
 				// Usar el precio (potencialmente modificado) desde el detalle del evento
-				price = eventParamsAfterGetPriceItemData.detail.priceItem['data'];
+				price = eventParamsAfterGetPriceItemData.priceItem['data'];
 			}
 		}
 
@@ -778,6 +779,8 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
 			
+			eventParamsBeforeDeploySFs.fatherFieldEl = fatherFieldEl;
+
 			desplegarSFs();
 			
 			desplegarPrice();
