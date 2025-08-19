@@ -47,6 +47,19 @@ const eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = {
 }
 const jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep = new CustomEvent('jwpsbscAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep', {detail: eventParamsAfterGetVcsItemfieldSubTypeAdditionalSelectionForRenderStep});
 
+const eventParamsBeforeDeploySFs = {
+	currentOptions: null
+};
+const jwpsbscBeforeDeploySFs = new CustomEvent('jwpsbscBeforeDeploySFs', {detail: eventParamsBeforeDeploySFs});
+
+
+const eventParamsAfterGetPriceItemData = {
+	'currentOptions': null,
+	'priceItem': null
+};
+const jwpsbscAfterGetPriceItemData = new CustomEvent('jwpsbscAfterGetPriceItemData', {detail: eventParamsAfterGetPriceItemData});
+
+
 TAFFY.extend('max', function (column) {
 
 	this.context({
@@ -614,6 +627,9 @@ function desplegarSFs(){
 		const sfcSlctr = ".selected-features-container";
 		let html = '<table><tbody>';
 
+		eventParamsBeforeDeploySFs.detail.currentOptions = selectedFeatures;		
+		document.dispatchEvent(jwpsbscBeforeDeploySFs);
+
 		$(selectedFeatures).each(function(i,e){
 			//console.log('Valor de ' + e.label + ': ' + e.value + '.');
 			if( e.value != null ){
@@ -668,7 +684,7 @@ function setFeatureValueForFieldTypeFieldData( eventSetFeatureValue ){
   }
 }
 
-function desplegarPrice( ru66 = false){
+function desplegarPrice(){
 	(function( $ ) {
 
 		const sfcSlctr = ".main-container .price-container";
@@ -679,7 +695,6 @@ function desplegarPrice( ru66 = false){
 		let intf = null;
 		let cp;
 		let priceItem;
-		let adicionalRangoSobre66;
 		let htmlPrice = '';
 		
 		[cp,i] = loadCUrrentOptionData();
@@ -688,16 +703,13 @@ function desplegarPrice( ru66 = false){
 			priceItem = getItmFromVcsItemsMatchsBySlug( cp, 'precio-venta' );
 			if( priceItem != null ){
 				price = priceItem['data'];
-				adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
-				if( ru66 ){
-					
-					if( adicionalRangoSobre66 != null ){
-						price = parseInt(price) + parseInt( adicionalRangoSobre66['data'] );
-						price = price.toString();
+				
+				eventParamsAfterGetPriceItemData.detail.currentOptions = cp;
+				eventParamsAfterGetPriceItemData.detail.priceItem = priceItem;
+				document.dispatchEvent(jwpsbscAfterGetPriceItemData);
 
-					} 
-
-				} 
+				// Usar el precio (potencialmente modificado) desde el detalle del evento
+				price = eventParamsAfterGetPriceItemData.detail.priceItem['data'];
 			}
 		}
 
@@ -765,57 +777,10 @@ function setEventHandlersForAvailablesValuesChoicesSelectors(){
 
 			$(fatherEl).find('.select-buton.outer').addClass('selected');
 			setFeatureValue( fieldId, fieldSlug, valueSelected, valueLabel, valueRegId );
-
-			let cp, i;
-			let adicionalRangoSobre66;
-			[cp,i] = loadCUrrentOptionData();
-			if( cp != null ){
-				
-				adicionalRangoSobre66 = getItmFromVcsItemsMatchsBySlug( cp, 'monto-adicional-rango-sobre-6-6' );
-				if(    ( adicionalRangoSobre66 != null )
-					&& ( $(fatherFieldEl).find('.checkbox-ru66 input[type="checkbox"]:checked').length > 0 ) 
-				){
-
-					eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
-					eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
-					eventParamsFeatureValue['value'] = 'si';
-					eventParamsFeatureValue['valueLabel'] = 'Si';
-					eventParamsFeatureValue['valueRegId'] = null;
-					eventParamsFeatureValue['fieldType'] = "field:data";
-					eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
-					eventParamsFeatureValue['priorityInStep'] = 99;
-					eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
-					
-						
-				} else {
-					if( adicionalRangoSobre66 != null ){
-						eventParamsFeatureValue['fieldId'] = "DT-" + adicionalRangoSobre66.id;
-						eventParamsFeatureValue['field'] = adicionalRangoSobre66.slug;
-						eventParamsFeatureValue['value'] = 'no';
-						eventParamsFeatureValue['valueLabel'] = 'No';
-						eventParamsFeatureValue['valueRegId'] = null;
-						eventParamsFeatureValue['fieldType'] = "field:data";
-						eventParamsFeatureValue['label'] = adicionalRangoSobre66.label;
-						eventParamsFeatureValue['priorityInStep'] = 99;
-						eventParamsFeatureValue['stepOnStore'] = swiper.activeIndex;
-					}
-				}
-
-				if( adicionalRangoSobre66 != null ){
-					setFeatureValueForFieldTypeFieldData( {detail: eventParamsFeatureValue} );
-				}
-				
-				
-			}
 			
 			desplegarSFs();
 			
-			if( $(fatherFieldEl).find('.checkbox-ru66 input[type="checkbox"]:checked').length > 0 ){
-				
-				desplegarPrice( true );
-			} else {
-				desplegarPrice( false );
-			}
+			desplegarPrice();
 			
 			document.addEventListener('jwpsbscAfterRenderStep', swiperNextSlide );
 			renderNextStep();
@@ -1079,7 +1044,16 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 
 
 	function addToCartHandler(){
-		const wdp = $('.cristal-selection.main-container .price-container .with-discount-price')[0];
+		
+		let wdp;
+		percentDiscount = parseFloat( JGB_WPSBSC_DATA['globalPercentDiscount'] );
+
+		if( percentDiscount > 0 ){
+			wdp = $('.cristal-selection.main-container .price-container .with-discount-price')[0];
+		} else {
+			wdp = $('.cristal-selection.main-container .price-container .without-discount-price')[0];
+		}
+
 		const valueLabel = $(wdp).text();
 		const priceField = {
 			'field': 'precio',
@@ -1088,6 +1062,7 @@ function loadCUrrentOptionData( parentFVPath = '' ){
 			'value': null,
 		};
 		priceField.value = priceField.valueLabel.replace('$','').replace('.','').replace('.','');
+		
 		const productData = [ ...selectedFeatures, {...priceField} ];
 		
 		let jwpsProdData = JSON.stringify( productData );
